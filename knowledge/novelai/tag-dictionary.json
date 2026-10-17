@@ -1,0 +1,2224 @@
+{
+ "version": 1,
+ "note": "辞書からタグを選ぶ用。安全側・NovelAIのタグ表にあるタグだけ。効くかは保証しない（試し描きで確認）。build_tag_dictionary.pyで再生成",
+ "groups": {
+  "camera": "カメラ・構図",
+  "expression": "表情",
+  "gesture": "しぐさ",
+  "posture": "姿勢",
+  "relation": "2人以上の関係・配置",
+  "contact": "ふれあい",
+  "environment": "場所・天気・光",
+  "object": "小物",
+  "manga": "漫画らしい表現",
+  "count": "人数"
+ },
+ "concepts": [
+  {
+   "id": "cam_close_up",
+   "ja": "顔や一部へ寄る",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "portrait",
+    "close-up"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_upper_body",
+   "ja": "胸から上",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "upper body"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_cowboy_shot",
+   "ja": "腰から上〜膝上",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "cowboy shot"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_full_body",
+   "ja": "全身",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "full body"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_from_above",
+   "ja": "見下ろし",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "from above"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_from_below",
+   "ja": "見上げ(あおり)",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "from below"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_from_side",
+   "ja": "横から",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "from side",
+    "profile"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_from_behind",
+   "ja": "後ろから",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "from behind"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_dutch_angle",
+   "ja": "斜め構図",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "dutch angle"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_wide",
+   "ja": "引きの構図",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "scenery",
+    "wide shot"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_over_shoulder",
+   "ja": "肩越し",
+   "group": "camera",
+   "people": "2",
+   "tags": [
+    "over shoulder"
+   ],
+   "related": [
+    "hair over shoulder",
+    "weapon over shoulder",
+    "carrying over shoulder",
+    "sword over shoulder",
+    "umbrella over shoulder",
+    "braid over shoulder",
+    "holding over opposite shoulder",
+    "jacket over shoulder",
+    "arm over shoulder"
+   ]
+  },
+  {
+   "id": "cam_depth",
+   "ja": "被写界深度・ぼかし",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "blurry background",
+    "depth of field"
+   ],
+   "related": []
+  },
+  {
+   "id": "cam_foreshortening",
+   "ja": "パース強調",
+   "group": "camera",
+   "people": "1",
+   "tags": [
+    "foreshortening"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_1girl",
+   "ja": "女性1人",
+   "group": "count",
+   "people": "1",
+   "tags": [
+    "1girl",
+    "solo"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_2girls",
+   "ja": "女性2人",
+   "group": "count",
+   "people": "2",
+   "tags": [
+    "2girls"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_3girls",
+   "ja": "女性3人",
+   "group": "count",
+   "people": "3+",
+   "tags": [
+    "3girls"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_4girls",
+   "ja": "女性4人以上",
+   "group": "count",
+   "people": "3+",
+   "tags": [
+    "4girls",
+    "6+girls",
+    "5girls"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_1girl_1boy",
+   "ja": "男女1人ずつ",
+   "group": "count",
+   "people": "2",
+   "tags": [
+    "1girl",
+    "1boy"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_2boys",
+   "ja": "男性2人",
+   "group": "count",
+   "people": "2",
+   "tags": [
+    "2boys"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_multiple",
+   "ja": "複数人",
+   "group": "count",
+   "people": "3+",
+   "tags": [
+    "multiple girls",
+    "multiple boys",
+    "multiple others"
+   ],
+   "related": []
+  },
+  {
+   "id": "cnt_crowd",
+   "ja": "群衆",
+   "group": "count",
+   "people": "3+",
+   "tags": [
+    "crowd"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_side_by_side",
+   "ja": "並ぶ",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "side-by-side"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_facing_another",
+   "ja": "向き合う",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "facing another",
+    "face-to-face"
+   ],
+   "related": [
+    "facing viewer",
+    "facing away",
+    "facing to the side",
+    "facing ahead",
+    "facing down",
+    "facing up",
+    "facing back"
+   ]
+  },
+  {
+   "id": "rel_back_to_back",
+   "ja": "背中合わせ",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "back-to-back"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_looking_at_another",
+   "ja": "相手を見る",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking at another"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_eye_contact",
+   "ja": "目が合う",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "eye contact"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_looking_at_viewer",
+   "ja": "こちらを見る",
+   "group": "relation",
+   "people": "1",
+   "tags": [
+    "looking at viewer"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_looking_away",
+   "ja": "目をそらす",
+   "group": "relation",
+   "people": "1",
+   "tags": [
+    "looking to the side",
+    "averting eyes"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_looking_back",
+   "ja": "振り返る",
+   "group": "relation",
+   "people": "1",
+   "tags": [
+    "looking back"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_looking_up",
+   "ja": "見上げる",
+   "group": "relation",
+   "people": "1",
+   "tags": [
+    "looking up"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_looking_down",
+   "ja": "見下ろす",
+   "group": "relation",
+   "people": "1",
+   "tags": [
+    "looking down"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_height_diff",
+   "ja": "身長差",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "height difference",
+    "size difference"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_standing_behind",
+   "ja": "後ろに立つ",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "behind another"
+   ],
+   "related": []
+  },
+  {
+   "id": "rel_leaning_on",
+   "ja": "寄りかかる",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "leaning on person",
+    "head on another's shoulder"
+   ],
+   "related": [
+    "leaning forward",
+    "leaning back",
+    "leaning to the side",
+    "leaning on object",
+    "head on hand",
+    "head on chest",
+    "head on head",
+    "leaning on table",
+    "head on arm",
+    "head on table",
+    "leaning on weapon",
+    "leaning out of window",
+    "head on hands"
+   ]
+  },
+  {
+   "id": "rel_sitting_together",
+   "ja": "並んで座る",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "sitting"
+   ],
+   "related": [
+    "sitting on person",
+    "sitting on lap",
+    "sitting on stairs",
+    "sitting on object",
+    "sitting on table",
+    "sitting on branch",
+    "sitting on shoulder",
+    "sitting on water",
+    "sitting on animal",
+    "sitting on head",
+    "sitting on box",
+    "sitting on pillow",
+    "sitting on food",
+    "sitting on log"
+   ]
+  },
+  {
+   "id": "con_hug",
+   "ja": "抱き合う",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "hug"
+   ],
+   "related": [
+    "hug from behind",
+    "pillow hug",
+    "arm hug",
+    "animal hug"
+   ]
+  },
+  {
+   "id": "con_hug_behind",
+   "ja": "後ろから抱く",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "hug from behind"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_hold_hands",
+   "ja": "手をつなぐ",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "holding hands"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_arm_hug",
+   "ja": "腕を組む・抱える",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "arm around shoulder",
+    "arm hug"
+   ],
+   "related": [
+    "arm around another's waist",
+    "arm around neck",
+    "arm around another's back"
+   ]
+  },
+  {
+   "id": "con_hand_shoulder",
+   "ja": "相手の肩に手",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "hand on another's shoulder"
+   ],
+   "related": [
+    "hand on another's head",
+    "hand on another's face",
+    "hand on another's cheek",
+    "hand on another's chin",
+    "hand on another's back",
+    "hand on another's arm",
+    "hand on another's waist",
+    "hand on another's chest",
+    "hand on another's hip",
+    "hand on another's neck"
+   ]
+  },
+  {
+   "id": "con_headpat",
+   "ja": "頭をなでる",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "hand on another's head",
+    "headpat"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_hand_face",
+   "ja": "相手の頬・顔に触れる",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "hand on another's face",
+    "hand on another's cheek",
+    "cheek pinching"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_wrist_grab",
+   "ja": "手首をつかむ",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "clothes grab",
+    "hand grab"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_pull",
+   "ja": "引っ張る・手を引く",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "pulling"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_carry",
+   "ja": "抱えて運ぶ・おんぶ",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "carrying",
+    "princess carry",
+    "piggyback"
+   ],
+   "related": [
+    "carrying person",
+    "carrying over shoulder",
+    "carrying under arm",
+    "carrying baby",
+    "carrying overhead",
+    "carrying multiple people"
+   ]
+  },
+  {
+   "id": "con_high_five",
+   "ja": "ハイタッチ",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "high five"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_handshake",
+   "ja": "握手",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "handshake"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_fist_bump",
+   "ja": "グータッチ",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "fist bump"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_pinky_swear",
+   "ja": "指切り",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "pinky swear"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_feeding",
+   "ja": "食べさせる",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "feeding",
+    "sharing food"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_shared_umbrella",
+   "ja": "相合傘",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "shared umbrella"
+   ],
+   "related": [
+    "shared clothes",
+    "shared scarf",
+    "shared food",
+    "shared speech bubble",
+    "shared earphones",
+    "shared blanket",
+    "shared bed",
+    "shared thought bubble",
+    "shared drink"
+   ]
+  },
+  {
+   "id": "con_whisper",
+   "ja": "耳打ち",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "whispering"
+   ],
+   "related": []
+  },
+  {
+   "id": "con_handing_over",
+   "ja": "物を渡す",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "giving"
+   ],
+   "related": [
+    "giving up the ghost",
+    "giving food"
+   ]
+  },
+  {
+   "id": "con_pointing_at_another",
+   "ja": "相手を指さす",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "pointing",
+    "pointing at another"
+   ],
+   "related": [
+    "pointing at viewer",
+    "pointing at self",
+    "pointing up",
+    "pointing out the details",
+    "pointing forward",
+    "pointing down",
+    "pointing melee weapon",
+    "pointing to the side",
+    "pointing at object",
+    "pointing sword",
+    "pointing with thumb"
+   ]
+  },
+  {
+   "id": "con_bowing",
+   "ja": "お辞儀",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "bowing"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_waving",
+   "ja": "手を振る",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "waving"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_pointing",
+   "ja": "指をさす",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "pointing",
+    "pointing at viewer"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_crossed_arms",
+   "ja": "腕組み",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "crossed arms"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_hand_mouth",
+   "ja": "口元に手",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "finger to mouth",
+    "hand to own mouth",
+    "hand over own mouth"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_hand_chest",
+   "ja": "胸に手を当てる",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "hand on own chest"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_hand_cheek",
+   "ja": "頬に手",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "hand on own face",
+    "hand on own cheek"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_hand_head",
+   "ja": "頭に手",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "hand on own head",
+    "hands on own head"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_arms_up",
+   "ja": "両手を上げる",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "arm up",
+    "arms up",
+    "raised fist"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_reaching",
+   "ja": "手を伸ばす",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "outstretched arm",
+    "reaching",
+    "reaching towards viewer",
+    "outstretched hand"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_thumbs_up",
+   "ja": "親指を立てる",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "thumbs up"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_salute",
+   "ja": "敬礼",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "salute"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_clenched",
+   "ja": "拳を握る",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "clenched hand",
+    "clenched hands"
+   ],
+   "related": []
+  },
+  {
+   "id": "ges_clapping",
+   "ja": "手を叩く・合わせる",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "own hands together",
+    "praying",
+    "clapping"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_standing",
+   "ja": "立つ",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "standing"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_sitting",
+   "ja": "座る",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "sitting",
+    "wariza",
+    "seiza"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_kneeling",
+   "ja": "ひざまずく",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "kneeling",
+    "squatting"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_lying",
+   "ja": "寝転ぶ",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "on side",
+    "on stomach"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_leaning_forward",
+   "ja": "前かがみ",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "leaning forward"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_walking",
+   "ja": "歩く・走る",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "walking",
+    "running"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_jumping",
+   "ja": "跳ぶ・倒れる",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "jumping",
+    "falling"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_stretching",
+   "ja": "伸びをする",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "stretching",
+    "yawning"
+   ],
+   "related": []
+  },
+  {
+   "id": "pos_turning",
+   "ja": "振り向く動き",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "turning head",
+    "spinning"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_smile",
+   "ja": "笑顔",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "smile",
+    "grin",
+    "happy",
+    "laughing"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_cry",
+   "ja": "泣く",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "tears",
+    "crying",
+    "streaming tears"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_blush",
+   "ja": "赤面",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "blush",
+    "embarrassed",
+    "full-face blush"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_surprised",
+   "ja": "驚き",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "open mouth",
+    "surprised",
+    "wide-eyed"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_angry",
+   "ja": "怒り",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "clenched teeth",
+    "angry",
+    "annoyed",
+    "glaring"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_sad",
+   "ja": "悲しみ",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "frown",
+    "sad",
+    "depressed"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_worried",
+   "ja": "不安・心配",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "scared",
+    "nervous",
+    "worried"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_serious",
+   "ja": "真剣・無表情",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "closed mouth",
+    "expressionless",
+    "serious",
+    "determined"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_smug",
+   "ja": "ドヤ顔・にやり",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "pout",
+    "smirk",
+    "smug"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_closed_eyes",
+   "ja": "目を閉じる",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "closed eyes",
+    "half-closed eyes",
+    "jitome"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_shaded_face",
+   "ja": "顔に影(ショック)",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "shaded face",
+    "empty eyes",
+    "blank eyes",
+    "gloom (expression)"
+   ],
+   "related": []
+  },
+  {
+   "id": "exp_sparkle",
+   "ja": "キラキラした目",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "sparkling eyes"
+   ],
+   "related": []
+  },
+  {
+   "id": "mng_effect_lines",
+   "ja": "集中線・効果線",
+   "group": "manga",
+   "people": "1",
+   "tags": [
+    "emphasis lines",
+    "speed lines"
+   ],
+   "related": []
+  },
+  {
+   "id": "mng_sweatdrop",
+   "ja": "汗マーク・漫符",
+   "group": "manga",
+   "people": "1",
+   "tags": [
+    "sweatdrop",
+    "flying sweatdrops",
+    "anger vein",
+    "spoken ellipsis",
+    "spoken question mark",
+    "spoken exclamation mark"
+   ],
+   "related": [
+    "spoken musical note",
+    "spoken blush",
+    "spoken squiggle",
+    "spoken anger vein",
+    "spoken interrobang",
+    "spoken character",
+    "spoken sweatdrop",
+    "spoken object",
+    "spoken food",
+    "spoken expression",
+    "spoken zzz"
+   ]
+  },
+  {
+   "id": "mng_chibi",
+   "ja": "ちびキャラ(SD)",
+   "group": "manga",
+   "people": "1",
+   "tags": [
+    "chibi"
+   ],
+   "related": []
+  },
+  {
+   "id": "mng_bubble",
+   "ja": "フキダシ・文字",
+   "group": "manga",
+   "people": "1",
+   "tags": [
+    "speech bubble",
+    "thought bubble",
+    "text focus"
+   ],
+   "related": []
+  },
+  {
+   "id": "mng_style",
+   "ja": "漫画調・単色",
+   "group": "manga",
+   "people": "1",
+   "tags": [
+    "monochrome",
+    "comic",
+    "greyscale",
+    "4koma"
+   ],
+   "related": []
+  },
+  {
+   "id": "mng_multi_view",
+   "ja": "複数コマ・分割",
+   "group": "manga",
+   "people": "1",
+   "tags": [
+    "multiple views",
+    "border",
+    "split screen"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_indoors",
+   "ja": "屋内",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "indoors",
+    "window",
+    "curtains"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_outdoors",
+   "ja": "屋外",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "outdoors",
+    "sky",
+    "cloud",
+    "tree"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_school",
+   "ja": "学校",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "classroom",
+    "school desk",
+    "chalkboard",
+    "school",
+    "hallway"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_street",
+   "ja": "街・道",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "building",
+    "city",
+    "street",
+    "crosswalk"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_train",
+   "ja": "電車・駅",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "train interior",
+    "train station"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_cafe",
+   "ja": "店・カフェ",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "shop",
+    "restaurant",
+    "cafe",
+    "convenience store"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_home",
+   "ja": "家の中",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "table",
+    "bedroom",
+    "kitchen",
+    "living room"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_park",
+   "ja": "公園・自然",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "beach",
+    "forest",
+    "flower field",
+    "river",
+    "park"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_weather",
+   "ja": "天気",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "cherry blossoms",
+    "wind",
+    "snow",
+    "rain",
+    "falling leaves"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_time",
+   "ja": "時間帯",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "night",
+    "starry sky",
+    "sunset",
+    "evening",
+    "moonlight"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_light",
+   "ja": "光の演出",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "sunlight",
+    "lens flare",
+    "backlighting",
+    "light rays"
+   ],
+   "related": []
+  },
+  {
+   "id": "env_background",
+   "ja": "無地・簡素な背景",
+   "group": "environment",
+   "people": "1",
+   "tags": [
+    "simple background",
+    "white background",
+    "gradient background"
+   ],
+   "related": []
+  },
+  {
+   "id": "obj_umbrella",
+   "ja": "傘を持つ",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "umbrella",
+    "holding umbrella"
+   ],
+   "related": []
+  },
+  {
+   "id": "obj_phone",
+   "ja": "スマホ",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "cellphone",
+    "smartphone",
+    "holding phone"
+   ],
+   "related": []
+  },
+  {
+   "id": "obj_book",
+   "ja": "本・ノート",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "holding book",
+    "reading",
+    "notebook",
+    "writing"
+   ],
+   "related": []
+  },
+  {
+   "id": "obj_eating",
+   "ja": "食べる・飲む",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "holding food",
+    "eating",
+    "holding cup",
+    "holding bottle",
+    "drinking"
+   ],
+   "related": []
+  },
+  {
+   "id": "obj_bag",
+   "ja": "鞄を持つ・背負う",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "backpack",
+    "shoulder bag",
+    "school bag",
+    "holding bag"
+   ],
+   "related": []
+  },
+  {
+   "id": "obj_gift",
+   "ja": "贈り物・手紙",
+   "group": "object",
+   "people": "2",
+   "tags": [
+    "gift",
+    "holding gift",
+    "letter",
+    "holding letter"
+   ],
+   "related": []
+  },
+  {
+   "id": "obj_sports",
+   "ja": "運動具",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "sneakers",
+    "running",
+    "holding ball",
+    "stopwatch",
+    "track and field"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_depth_dialogue",
+   "ja": "手前の背中と奥の話し手の二人配置",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking at another",
+    "depth of field",
+    "blurry foreground"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_across_table",
+   "ja": "机を挟んで二人が話す",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "sitting",
+    "table",
+    "facing another"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_stand_sit",
+   "ja": "立つ一人と座る一人の会話",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "standing",
+    "sitting",
+    "looking up"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_three_triangle",
+   "ja": "三人が三角形に向き合う会話",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "3girls",
+    "facing another"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_four_table",
+   "ja": "四人が机を囲む相談",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "sitting",
+    "4girls",
+    "table"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_pair_observer",
+   "ja": "話す二人と少し離れて見守る一人",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "looking at another",
+    "3girls"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_two_pairs",
+   "ja": "四人が二組に分かれて話す",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "4girls",
+    "talking"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_queue",
+   "ja": "二〜四人が前後に並んで待つ",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "waiting",
+    "queue"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_stairs_levels",
+   "ja": "階段の上下で二人が話す",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking down",
+    "looking up",
+    "stairs"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_doorway_pair",
+   "ja": "戸口の内と外に立つ二人",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking at another",
+    "open door",
+    "doorway"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_common_gaze",
+   "ja": "二人が同じ画面外の物を見る",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking to the side"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_follow_point",
+   "ja": "一人の指先をもう一人が目で追う",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "pointing",
+    "looking at object"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_one_sided_gaze",
+   "ja": "相手を見る一人と気づかない一人",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking at another"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_notice_turn",
+   "ja": "呼びかけられて相手へ振り向く",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking back",
+    "surprised",
+    "turning head"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_shared_book",
+   "ja": "二人で一冊の本をのぞき込む",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "book",
+    "looking down",
+    "reading"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_shared_phone",
+   "ja": "一人が見せるスマホを二人で見る",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "holding phone",
+    "looking at phone"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_listener_pause",
+   "ja": "返答前に考え込む聞き手の寄り",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "closed mouth",
+    "hand on own chin",
+    "thinking"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_disbelief",
+   "ja": "聞き返したくなる疑わしげな反応",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "raised eyebrow",
+    "confused"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_relief",
+   "ja": "張りつめた後にほっとする反応",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "smile",
+    "closed eyes",
+    "sigh"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_hold_laughter",
+   "ja": "笑いをこらえて口元を隠す反応",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "smile",
+    "giggling"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_stunned_silence",
+   "ja": "言葉が出ず固まる反応カット",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "closed mouth",
+    "expressionless",
+    "wide-eyed"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_resolve_reply",
+   "ja": "迷いから決意へ変わった返答前の顔",
+   "group": "expression",
+   "people": "1",
+   "tags": [
+    "clenched hand",
+    "serious",
+    "determined"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_mixed_reactions",
+   "ja": "驚く一人と平然とした一人の反応差",
+   "group": "expression",
+   "people": "2",
+   "tags": [
+    "2girls",
+    "expressionless",
+    "surprised"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_three_reactions",
+   "ja": "三人それぞれ異なる表情の反応",
+   "group": "expression",
+   "people": "3+",
+   "tags": [
+    "smile",
+    "3girls",
+    "surprised",
+    "confused"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_about_to_sit",
+   "ja": "椅子へ腰を下ろしかける途中",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "leaning forward",
+    "chair"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_about_to_stand",
+   "ja": "机に手をついて立ち上がりかける",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "leaning forward",
+    "chair",
+    "hand on table"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_reach_shelf",
+   "ja": "棚の品物へ手が届く直前",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "outstretched arm",
+    "reaching",
+    "shelf"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_pickup_object",
+   "ja": "落ちた小物を拾いかける",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "reaching",
+    "picking up"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_open_door",
+   "ja": "ドアノブを回して入る途中",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "door",
+    "opening door",
+    "doorknob"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_step_threshold",
+   "ja": "敷居をまたぐ一歩の足元",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "foot focus",
+    "doorway"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_catch_ball",
+   "ja": "相手の投げた球を受ける直前",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "outstretched arms",
+    "ball",
+    "catching"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_running_start",
+   "ja": "合図を待つ走り出す直前の姿勢",
+   "group": "posture",
+   "people": "1",
+   "tags": [
+    "track and field"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_relay_pass",
+   "ja": "二人が走りながらバトンを渡す",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "running"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_sports_coaching",
+   "ja": "一人の動作を横で見て助言する",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "pointing"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_bench_cheer",
+   "ja": "仲間の競技をベンチから応援する",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "bench",
+    "cheering",
+    "clapping"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_shop_compare",
+   "ja": "二人で二つの商品を見比べる",
+   "group": "object",
+   "people": "2",
+   "tags": [
+    "holding",
+    "looking at object",
+    "shopping"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_shop_checkout",
+   "ja": "レジ越しに代金を渡す二人",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "money",
+    "counter",
+    "cash register"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_shop_window",
+   "ja": "二人でショーウインドーを眺める",
+   "group": "environment",
+   "people": "2",
+   "tags": [
+    "shopping"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_library_study",
+   "ja": "図書館で二〜四人が勉強する",
+   "group": "environment",
+   "people": "3+",
+   "tags": [
+    "bookshelf",
+    "library",
+    "studying"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_class_board",
+   "ja": "黒板で説明する一人と聞く級友",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "pointing",
+    "chalkboard",
+    "chalk"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_lunch_table",
+   "ja": "二〜四人で昼食を囲む",
+   "group": "environment",
+   "people": "3+",
+   "tags": [
+    "table",
+    "bento"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_cooking_pair",
+   "ja": "二人が調理と配膳を分担する",
+   "group": "contact",
+   "people": "2",
+   "tags": [
+    "holding plate",
+    "cooking",
+    "kitchen"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_cleaning_class",
+   "ja": "二〜四人で教室の掃除を分担する",
+   "group": "environment",
+   "people": "3+",
+   "tags": [
+    "broom",
+    "cleaning",
+    "dustpan"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_silent_bench",
+   "ja": "会話が途切れ距離を空けて座る二人",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "sitting",
+    "bench"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_departing_pair",
+   "ja": "別れた相手の背中を見送る",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "from behind",
+    "waving",
+    "walking away"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_empty_chair",
+   "ja": "去った人物の空席で間を置く",
+   "group": "manga",
+   "people": "0",
+   "tags": [
+    "no humans",
+    "chair"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_unopened_letter",
+   "ja": "開かれない手紙だけで返答待ちを示す",
+   "group": "manga",
+   "people": "0",
+   "tags": [
+    "still life",
+    "letter",
+    "envelope"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_rain_window_pause",
+   "ja": "雨の窓に切り替えて沈黙を置く",
+   "group": "manga",
+   "people": "0",
+   "tags": [
+    "no humans",
+    "window"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_after_event_desk",
+   "ja": "片付け途中の机で出来事の余韻を示す",
+   "group": "manga",
+   "people": "0",
+   "tags": [
+    "desk",
+    "still life",
+    "messy room"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_clock_cutaway",
+   "ja": "時計の寄りで時間経過をつなぐ",
+   "group": "manga",
+   "people": "0",
+   "tags": [
+    "close-up",
+    "clock",
+    "wall clock"
+   ],
+   "related": [
+    "alarm clock",
+    "analog clock",
+    "digital clock",
+    "dandelion clock"
+   ]
+  },
+  {
+   "id": "cx_calendar_cutaway",
+   "ja": "カレンダーで日付の切り替えを示す",
+   "group": "manga",
+   "people": "0",
+   "tags": [
+    "no humans"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_afternoon_shadow",
+   "ja": "長く伸びた影で夕方への移行を示す",
+   "group": "environment",
+   "people": "0",
+   "tags": [
+    "shadow",
+    "sunset"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_finished_drink",
+   "ja": "空になったカップで会話の経過を示す",
+   "group": "object",
+   "people": "0",
+   "tags": [
+    "cup",
+    "still life"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_season_cutaway",
+   "ja": "同じ場所の落葉で季節の移行を示す",
+   "group": "environment",
+   "people": "0",
+   "tags": [
+    "scenery",
+    "autumn leaves"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_school_establish",
+   "ja": "学校の外観で次の場面を導入する",
+   "group": "environment",
+   "people": "0",
+   "tags": [
+    "scenery"
+   ],
+   "related": [
+    "school gateway"
+   ]
+  },
+  {
+   "id": "cx_gym_establish",
+   "ja": "体育館やコート全体を説明する",
+   "group": "environment",
+   "people": "0",
+   "tags": [
+    "no humans",
+    "basketball court"
+   ],
+   "related": [
+    "tennis court"
+   ]
+  },
+  {
+   "id": "cx_shopping_establish",
+   "ja": "商店街の全景で買い物の場面を導入",
+   "group": "environment",
+   "people": "0",
+   "tags": [
+    "storefront"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_room_layout",
+   "ja": "机と入口が分かる室内の説明カット",
+   "group": "camera",
+   "people": "0",
+   "tags": [
+    "wide shot",
+    "perspective"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_station_arrival",
+   "ja": "駅舎と案内で移動先を示す",
+   "group": "environment",
+   "people": "0",
+   "tags": [
+    "sign",
+    "train station"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_hands_exchange",
+   "ja": "差し出す手と受け取る手だけを見せる",
+   "group": "camera",
+   "people": "2",
+   "tags": [
+    "hand focus"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_hesitating_hand",
+   "ja": "触れる直前に止まった手でためらいを示す",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "reaching",
+    "outstretched hand",
+    "hand focus"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_receipt_detail",
+   "ja": "買い物のレシートや値札の寄り",
+   "group": "object",
+   "people": "0",
+   "tags": [
+    "close-up",
+    "price tag",
+    "receipt"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_key_in_hand",
+   "ja": "手のひらの鍵で持ち主や移動を示す",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "open hand",
+    "key",
+    "holding key"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_note_writing",
+   "ja": "ノートを書く指先とペンの寄り",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "holding pen",
+    "writing",
+    "hand focus"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_shoelace_detail",
+   "ja": "靴ひもを結ぶ手元で出発を示す",
+   "group": "object",
+   "people": "1",
+   "tags": [
+    "sneakers",
+    "shoelaces"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_two_cups",
+   "ja": "二つのカップで画面外の二人を示す",
+   "group": "object",
+   "people": "0",
+   "tags": [
+    "cup",
+    "table",
+    "still life"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_shared_photo",
+   "ja": "二人が写真を持って思い出を話す",
+   "group": "object",
+   "people": "2",
+   "tags": [
+    "looking at object",
+    "holding photo"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_train_seats",
+   "ja": "電車で向かいの席から相手を見る",
+   "group": "relation",
+   "people": "2",
+   "tags": [
+    "looking at another",
+    "train interior"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_wait_meeting",
+   "ja": "待ち合わせで時計を気にする一人",
+   "group": "gesture",
+   "people": "1",
+   "tags": [
+    "wristwatch",
+    "waiting"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_group_selfie",
+   "ja": "三〜四人が一台のスマホに収まる",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "4girls",
+    "selfie"
+   ],
+   "related": []
+  },
+  {
+   "id": "cx_join_conversation",
+   "ja": "話している二人へ三人目が近づく",
+   "group": "relation",
+   "people": "3+",
+   "tags": [
+    "3girls",
+    "walking",
+    "talking"
+   ],
+   "related": []
+  }
+ ]
+}

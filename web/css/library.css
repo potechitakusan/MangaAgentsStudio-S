@@ -1,0 +1,85 @@
+/* Left project list and its collapsed state. */
+.library {
+  width:205px;
+  flex:none;
+  border-right:1px solid var(--line);
+  padding:25px 16px;
+  position:relative;
+  background:#eeefe9;
+}
+.library .section-heading {
+  padding:0 8px;
+}
+.project-card {
+  width:100%;
+  text-align:left;
+  background:transparent;
+  border:0;
+  margin:4px 0;
+  padding:13px 12px;
+  font-weight:600;
+}
+.project-card.active {
+  background:white;
+  box-shadow:0 2px 6px #20342a08;
+  color:var(--accent);
+}
+.project-card small {
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  margin-top:7px;
+  font-weight:400;
+}
+.library-note {
+  margin:50px 8px;
+  color:#8a938a;
+  font-size:11px;
+  line-height:1.9;
+}
+@media(max-width:1050px) {
+  .library {
+    width:160px;
+  }
+}
+
+@media(max-width:760px) {
+  .library {
+    width:120px;
+    padding:15px 7px;
+  }
+  .library-note {
+    display:none;
+  }
+}
+
+.library {
+  transition:width .15s;
+}
+.library-buttons {
+  display:flex;
+  gap:2px;
+  align-items:center;
+}
+.library .section-heading {
+  padding:0 4px 0 8px;
+}
+main.library-collapsed .library {
+  width:46px;
+  padding:25px 5px;
+}
+main.library-collapsed .library-title,
+main.library-collapsed #projects,
+main.library-collapsed .library-note,
+main.library-collapsed #new-project {
+  display:none;
+}
+main.library-collapsed .library .section-heading {
+  justify-content:center;
+  padding:0;
+}
+@media(max-width:760px) {
+  main.library-collapsed .library {
+    width:46px;
+  }
+}

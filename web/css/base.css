@@ -1,0 +1,203 @@
+/* Tokens, resets and shared controls. */
+:root {
+  font-family:Inter,"Yu Gothic UI",Meiryo,sans-serif;
+  color:#25312f;
+  background:#f5f5f0;
+  font-synthesis:none;
+  --accent:#276957;
+  --muted:#77817b;
+  --line:#dde2da;
+}
+* {
+  box-sizing:border-box;
+}
+body {
+  margin:0;
+}
+button,
+input,
+select,
+textarea {
+  font:inherit;
+}
+button {
+  cursor:pointer;
+  border:1px solid #cbd4ca;
+  border-radius:7px;
+  background:#fff;
+  padding:9px 13px;
+  color:#354a42;
+  font-size:12px;
+  font-weight:600;
+  transition:.15s;
+}
+button:hover {
+  background:#edf3ed;
+  border-color:#7b9b88;
+}
+button:disabled {
+  opacity:.45;
+  cursor:wait;
+}
+.primary {
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+.primary:hover {
+  background:#1c5545;
+}
+.subtle {
+  background:transparent;
+}
+.icon {
+  padding:2px 10px;
+  font-size:20px;
+}
+.hint {
+  font-size:11px;
+  color:var(--muted);
+  font-weight:400;
+}
+h1 {
+  font-size:26px;
+  font-weight:650;
+  letter-spacing:-.5px;
+  margin:8px 0;
+}
+h2 {
+  font-weight:600;
+  font-size:23px;
+}
+p {
+  font-size:12px;
+  line-height:1.8;
+  color:var(--muted);
+}
+.badge {
+  font-size:10px;
+  color:#71806b;
+  background:#f1f4eb;
+  border-radius:4px;
+  padding:4px 7px;
+}
+label {
+  display:block;
+  font-size:12px;
+  font-weight:600;
+  margin:13px 0 6px;
+}
+label .hint {
+  margin-left:5px;
+}
+input,
+textarea,
+select {
+  border:1px solid #d9dfd7;
+  border-radius:5px;
+  background:#fafbf8;
+  color:#2c3733;
+  padding:9px;
+  width:100%;
+  font-size:12px;
+  line-height:1.6;
+}
+textarea {
+  resize:vertical;
+  display:block;
+  margin-top:6px;
+}
+input:focus,
+textarea:focus {
+  outline:2px solid #76a18a55;
+  border-color:#719a7c;
+}
+select {
+  width:auto;
+  padding:3px 7px;
+}
+.field-row {
+  display:flex;
+  gap:10px;
+}
+.field-row label {
+  flex:1;
+  min-width:0;
+}
+.actions {
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  margin-top:17px;
+}
+.actions button {
+  flex:1;
+}
+details {
+  margin:17px 0;
+  font-size:12px;
+}
+summary {
+  cursor:pointer;
+  color:#576957;
+  font-size:12px;
+}
+pre {
+  font-size:10px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  max-height:300px;
+  overflow:auto;
+  background:#f5f6f2;
+  padding:10px;
+}
+a {
+  font-size:11px;
+  color:var(--accent);
+}
+[hidden] {
+  display:none!important;
+}
+@media(max-width:760px) {
+  h1 {
+    font-size:22px;
+  }
+  .field-row {
+    flex-wrap:wrap;
+  }
+  .field-row label {
+    min-width:70px;
+  }
+}
+
+@media(max-width:950px) {
+  .actions {
+    flex-wrap:wrap;
+  }
+}
+
+.danger {
+  background:#a8452a;
+  border-color:#a8452a;
+  color:#fff;
+}
+.danger:hover {
+  background:#8f3920;
+}
+.danger:disabled {
+  opacity:.4;
+  cursor:not-allowed;
+}
+:root {
+  --page-zoom:1;
+  --page-base:max(300px,calc((100vh - 300px)*2/3));
+}
+/* One-line boxes built by textField(rows=1): names, IDs, seeds. */
+label > input[type=text] {
+  display:block;
+  margin-top:6px;
+}
+/* Result areas (previews, request JSON) stay out of sight until they have content. */
+pre:empty {
+  display:none;
+}

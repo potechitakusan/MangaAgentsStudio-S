@@ -1,0 +1,86 @@
+{
+  "template": "three",
+  "panels": [
+    {
+      "scene": "雨の夕方の駅、澪が青いベンチに置いた鞄の中を探る",
+      "prompt": "1girl searching inside a bag placed on a blue wooden bench, rainy evening station platform, wet cobblestones, overcast sky, wide shot, reflections in puddles, open empty handbag, searching for missing keys, no visible keys",
+      "negative": "text, speech bubble, key, keys, bell, holding keys",
+      "characters": [
+        {
+          "id": "mio",
+          "prompt": "rummaging inside her bag, anxious expression",
+          "x": 0.5,
+          "y": 0.55
+        }
+      ],
+      "dialogue": [
+        "ない……鍵がない"
+      ],
+      "location_id": "station",
+      "prop_ids": [],
+      "speakers": [
+        "mio"
+      ]
+    },
+    {
+      "scene": "駅のひさし下、蓮が鍵束をつまんで澪に見せる",
+      "prompt": "1man holding out a key ring with a small brass bell under the station awning, rain behind him, medium shot, square clock on white plaster wall in background",
+      "negative": "text, speech bubble",
+      "characters": [
+        {
+          "id": "ren",
+          "prompt": "pinching the key ring, calm expression",
+          "x": 0.35,
+          "y": 0.5
+        },
+        {
+          "id": "mio",
+          "prompt": "turning toward him, surprised face",
+          "x": 0.75,
+          "y": 0.5
+        }
+      ],
+      "dialogue": [
+        "探しているの、これ？",
+        "あ……"
+      ],
+      "location_id": "station",
+      "prop_ids": [
+        "key_bell"
+      ],
+      "speakers": [
+        "ren",
+        "mio"
+      ]
+    },
+    {
+      "scene": "澪が鍵束を受け取る",
+      "prompt": "1girl receiving a key ring with brass bell from a man's hand, close-up of hands under station awning, rainy dusk light",
+      "negative": "text, speech bubble",
+      "characters": [
+        {
+          "id": "mio",
+          "prompt": "taking the keys, relieved but reproachful look",
+          "x": 0.65,
+          "y": 0.5
+        },
+        {
+          "id": "ren",
+          "prompt": "handing over the keys, seen from behind her shoulder",
+          "x": 0.3,
+          "y": 0.5
+        }
+      ],
+      "dialogue": [
+        "ありがとう。今日に限って、落とすなんて"
+      ],
+      "location_id": "station",
+      "prop_ids": [
+        "key_bell"
+      ],
+      "speakers": [
+        "mio"
+      ]
+    }
+  ]
+}

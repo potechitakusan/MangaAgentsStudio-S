@@ -1,0 +1,15 @@
+{
+  "title": "傘の約束",
+  "style": "anime coloring, clean lineart, soft rainy daylight",
+  "characters": [
+    {"id": "mio", "name": "澪", "appearance": "girl, adult woman, short black hair, brown eyes", "appearance_ja": "成人女性、短い黒髪、茶色の目", "voice": "brief, casual Japanese", "voice_ja": "短く自然な話し言葉", "default_outfit_id": "raincoat", "outfits": [{"id": "raincoat", "name": "雨の日の服", "prompt": "mustard yellow raincoat, black trousers, brown boots", "prompt_ja": "からし色のレインコート、黒いズボン、茶色のブーツ"}]}
+  ],
+  "pages": [{
+    "template": "three-wide",
+    "panels": [
+      {"id": "p1-1", "scene": "雨の駅前で澪が空を見上げる", "prompt": "1girl, rainy train station entrance, wide shot, puddles, overcast sky", "negative": "text, speech bubble", "characters": [{"id": "mio", "prompt": "looking up at the sky, worried expression", "x": 0.7, "y": 0.5}], "dialogue": ["まだ降ってる"], "seed": null},
+      {"id": "p1-2", "scene": "澪が傘を開く", "prompt": "1girl, train station entrance, medium shot, red umbrella, rain", "negative": "text, speech bubble", "characters": [{"id": "mio", "prompt": "holding an open red umbrella, gentle smile", "x": 0.5, "y": 0.5}], "dialogue": [], "seed": null},
+      {"id": "p1-3", "scene": "澪が雨の道を歩き出す", "prompt": "1girl, wet street, rear view, wide shot, red umbrella, reflections", "negative": "text, speech bubble", "characters": [{"id": "mio", "prompt": "walking away, holding umbrella", "x": 0.5, "y": 0.5}], "dialogue": ["帰ろう"], "seed": null}
+    ]
+  }]
+}

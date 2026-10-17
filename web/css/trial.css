@@ -1,0 +1,70 @@
+/* Wardrobe editor and trial drawing. */
+.wardrobe {
+  border-top:1px solid var(--line);
+  margin-top:18px;
+  padding-top:8px;
+}
+.outfit-edit {
+  background:white;
+  padding:10px;
+  margin:8px 0;
+}
+.wardrobe select,
+#trial-selectors select {
+  display:block;
+  width:100%;
+  padding:8px;
+}
+.trial-result {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(200px,.7fr);
+  gap:20px;
+}
+.trial-result figure {
+  margin:16px 0;
+}
+.trial-result img {
+  width:100%;
+  max-height:520px;
+  object-fit:contain;
+  background:#f3f3ef;
+  border-radius:8px;
+}
+.trial-result figcaption {
+  font-size:12px;
+  line-height:1.7;
+}
+.trial-result pre {
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  max-height:260px;
+  overflow:auto;
+  font-size:11px;
+}
+.trial-history-item {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:8px 0;
+}
+.trial-history-item a {
+  font-size:12px;
+}
+#trial-selectors {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+#trial-selectors label {
+  min-width:140px;
+  flex:1;
+}
+#trial-seed {
+  min-height:35px;
+}
+@media(max-width:950px) {
+  .trial-result {
+    grid-template-columns:1fr;
+  }
+}

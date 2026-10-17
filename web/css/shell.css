@@ -1,0 +1,220 @@
+/* Workspace frame: heading, status, stage grid, side tabs. */
+main {
+  display:flex;
+  min-height:calc(100vh - 80px);
+}
+.section-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:15px;
+  gap:10px;
+}
+.workspace {
+  padding:30px 35px;
+  width:calc(100% - 205px);
+  max-width:1650px;
+}
+.project-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
+.eyebrow {
+  font-size:10px;
+  letter-spacing:2px;
+  color:#749082;
+  font-weight:700;
+}
+.toolbar {
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+#status {
+  font-size:12px;
+  padding:10px 13px;
+  border:1px solid #d9e6d8;
+  background:#edf4e9;
+  border-radius:6px;
+  margin:15px 0 22px;
+  color:#536f55;
+  min-height:38px;
+  white-space:pre-wrap;
+}
+#status.error {
+  border-color:#edc3b2;
+  background:#fff0e9;
+  color:#9a482a;
+}
+@media(min-width:1500px) {
+  .workspace {
+    padding:35px 45px;
+  }
+}
+
+@media(max-width:1050px) {
+  .workspace {
+    width:calc(100% - 160px);
+    padding:24px 20px;
+  }
+  .project-heading {
+    display:block;
+  }
+  .toolbar {
+    justify-content:flex-start;
+    margin:18px 0;
+  }
+}
+
+@media(max-width:760px) {
+  .workspace {
+    width:calc(100% - 120px);
+    padding:18px 12px;
+  }
+  .toolbar button {
+    font-size:10px;
+    padding:7px;
+  }
+}
+
+.workspace {
+  flex:1;
+  min-width:0;
+  width:auto;
+  max-width:2100px;
+}
+/* The centre lane is only as wide as the shown page (with its zoom); the right panel takes the rest, 420-860px.
+   Designed for a 1920x1080 screen: x1.0 gives the panel 860px, x2.0 still fits the whole page in the lane. */
+.stage {
+  --lane:calc(var(--page-base) * var(--page-zoom) + 24px);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) clamp(420px,calc(100% - var(--lane) - 24px),860px);
+  gap:24px;
+  align-items:start;
+}
+.stage-center {
+  min-width:0;
+}
+.stage-side {
+  position:sticky;
+  top:10px;
+  max-height:calc(100vh - 20px);
+  overflow-y:auto;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fff;
+  scrollbar-width:thin;
+}
+.side-head {
+  position:sticky;
+  top:0;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  padding-right:12px;
+}
+.tabs {
+  display:flex;
+  flex:1;
+}
+.tab {
+  flex:1;
+  border:0;
+  border-bottom:3px solid transparent;
+  border-radius:0;
+  background:transparent;
+  padding:13px 6px;
+  font-size:12px;
+  color:#5e6f66;
+}
+.tab:hover {
+  background:#f3f6f0;
+}
+.tab[aria-selected=true] {
+  border-bottom-color:var(--accent);
+  color:var(--accent);
+  background:#f7faf5;
+}
+.tab:focus-visible {
+  outline:2px solid #76a18a;
+  outline-offset:-3px;
+}
+#side-dirty.unsaved {
+  background:#fff0e0;
+  color:#a2561d;
+}
+.tab-panel {
+  padding:16px;
+}
+.tab-lead {
+  margin:0 0 12px;
+}
+.tab-heading {
+  margin:20px 0 4px;
+  font-size:14px;
+  color:var(--accent);
+  border-bottom:1px solid var(--line);
+  padding-bottom:6px;
+}
+.tab-panel .tab-heading:first-of-type {
+  margin-top:4px;
+}
+.tab-panel .workbench-card {
+  margin:0 0 16px;
+  padding:16px;
+}
+.tab-panel .editor {
+  padding:16px;
+  margin-bottom:16px;
+}
+.tab-panel .llm-controls {
+  margin:0 0 16px;
+}
+.section-heading+.pager {
+  max-width:calc((100vh - 300px)*2/3 + 2px);
+  min-width:min(100%,360px);
+  margin-inline:auto;
+}
+@media(max-width:1100px) {
+  .stage {
+    grid-template-columns:1fr;
+  }
+  .stage-side {
+    position:static;
+    max-height:none;
+  }
+}
+
+@media(max-width:760px) {
+  .tab {
+    font-size:11px;
+    padding:11px 3px;
+  }
+  .tab-panel {
+    padding:12px;
+  }
+}
+
+.section-heading+.page-bar {
+  max-width:none;
+  min-width:0;
+}
+.dirty-list {
+  background:#fff4e6;
+  border-bottom:1px solid #edd9bd;
+  padding:8px 14px;
+  font-size:11px;
+  line-height:1.7;
+  color:#7a5a2a;
+}
+.dirty-list strong {
+  display:block;
+  margin-bottom:2px;
+}

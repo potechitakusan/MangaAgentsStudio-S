@@ -1,0 +1,102 @@
+/* Dialogs, empty state and the new-pages card. */
+.empty {
+  text-align:center;
+  padding:90px 20px;
+}
+.empty-symbol {
+  font-size:70px;
+  color:#86a190;
+}
+.empty p {
+  margin-bottom:25px;
+}
+.card {
+  max-width:700px;
+  margin:25px auto;
+  background:white;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:28px;
+}
+#page-count {
+  width:70px;
+  margin-left:10px;
+}
+dialog {
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:30px;
+  width:min(620px,92vw);
+  max-height:90vh;
+}
+dialog::backdrop {
+  background:#1f302f77;
+}
+dialog h2 {
+  margin-top:10px;
+}
+#delete-dialog p {
+  margin:10px 0;
+}
+#produce-dialog ul {
+  padding-left:20px;
+  margin:10px 0;
+}
+#produce-dialog li {
+  font-size:12px;
+  line-height:1.8;
+  color:#46564f;
+}
+.source-progress {
+  max-height:9em;
+  overflow:auto;
+  font-size:11px;
+  line-height:1.7;
+}
+.source-progress strong {
+  display:block;
+}
+.error-text {
+  color:#a3392f;
+  font-size:12px;
+}
+.budget-now {
+  font-weight:600;
+}
+.budget-message {
+  min-height:1.5em;
+  font-size:12px;
+}
+.tag-dialog {
+  width:min(760px, 94vw);
+}
+.tag-list {
+  max-height:52vh;
+  overflow:auto;
+  border-top:1px solid var(--line);
+}
+.tag-row {
+  padding:8px 0;
+  border-bottom:1px solid var(--line);
+}
+.tag-concept {
+  font-weight:600;
+  font-size:13px;
+}
+.tag-chips {
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:4px;
+  align-items:center;
+}
+.tag-chip {
+  padding:3px 9px;
+  font-size:12px;
+  font-weight:400;
+  border-radius:99px;
+}
+.tag-chip.related {
+  opacity:.75;
+  font-size:11px;
+}

@@ -1,0 +1,9 @@
+'use strict';
+// Small builders for bilingual text fields, action buttons and translation.
+function setAtPath(object,path,value,write=false){const keys=path.split('.');let o=object;for(const k of keys.slice(0,-1)){if(o[k]===undefined)o[k]={};o=o[k];}if(write)o[keys.at(-1)]=value;return o[keys.at(-1)];}
+// rows=1 gives a one-line box (names, IDs, seeds); anything longer is a resizable text area.
+function textField(parent,label,value,path,rows=2){const l=el('label',label),t=el(rows===1?'input':'textarea');if(rows===1)t.type='text';else t.rows=rows;t.value=value||'';if(path)t.dataset.configPath=path;t.oninput=markDirty;l.append(t);parent.append(l);return t;}
+function actionButton(parent,label,fn){const b=el('button',label);b.type='button';b.onclick=()=>action(fn);parent.append(b);return b;}
+function bilingualFields(parent,label,en,ja,pathEn,pathJa,sent=true){const block=el('div',undefined,'bilingual');const a=textField(block,label+'（日本語・確認用）',ja,pathJa),b=textField(block,label+(sent?'（英語・NovelAIへ送信）':'（英語・制作AI用。画像には送られません）'),en,pathEn);const buttons=el('div',undefined,'translation-actions');actionButton(buttons,'日本語 → 英語',()=>translateField(a,b,'en'));actionButton(buttons,'英語 → 日本語',()=>translateField(b,a,'ja'));block.append(buttons);parent.append(block);return {en:b,ja:a};}
+async function translateField(source,target,language){if(!project)throw new Error('先に作品を作成してください');const text=source.value;if(!text.trim())throw new Error('翻訳元が空欄です');const result=await runJob('translate',{items:[{id:'field',text}],target:language},false);target.value=result[0].text;target.dispatchEvent(new Event('input',{bubbles:true}));status('翻訳を入力欄へ反映しました。内容を確認して保存してください');}
+function selectField(parent,label,options,value,path){const l=el('label',label),s=el('select');for(const [id,name] of options){const o=el('option',name);o.value=id;s.append(o);}s.value=value;if(path)s.dataset.configPath=path;l.append(s);parent.append(l);return s;}

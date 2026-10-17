@@ -1,46 +1,11 @@
 # MangaAgentsStudio-S release files
-# built 2026-10-17T15:16:17+09:00 from SVN BASE (newest committed revision r242)
-# 205 files
+# built 2026-10-17T16:56:07+09:00 from SVN BASE (newest committed revision r249)
+# 170 files
 .env.example
-docs/design/ARCHITECTURE.md
-docs/design/PROMPT_CONCEPT_LOOKUP.md
-docs/design/PROMPT_LAB_DESIGN.md
-docs/guides/EDITING_WORKSPACE.md
-docs/guides/FIRST_MANGA_GUIDE.md
-docs/guides/FOUR_PAGE_WORKFLOW.md
-docs/guides/GROK_PROVIDER.md
-docs/guides/NOTE_ARTICLE_DRAFT.md
-docs/guides/OPERATIONS.md
-docs/guides/WHOLE_PAGE_WORKFLOW.md
-docs/PLAN.md
-docs/PROGRESS.md
-docs/README.md
-docs/records/DOCUMENT_REORGANIZATION.md
-docs/records/MONO_COOKIE_12.md
-docs/records/PROFILE_TRIALS.md
-docs/records/REVISION_TRIAL.md
-docs/records/STRATA_UNITS.md
-docs/records/TRACK_SHOPPING_TRIAL.md
-docs/records/TWELVE_PAGE_TRIAL.md
-docs/records/UI_IMPROVEMENTS.md
-docs/records/VERIFICATION.md
-docs/records/WHOLE_PAGE_MODE.md
-docs/SOURCES.md
-docs/SPEC.md
-examples/hinata-shizuku-12.txt
-examples/lighthouse-sketch-12.txt
 examples/lost-camera-12.txt
-examples/mono-cookie-12.txt
-examples/novelai-20p-memory.txt
-examples/novelai-storyboard-system.txt
 examples/novelai-visual-novel-system.txt
-examples/NOVELAI_20P_GUIDE.md
 examples/NOVELAI_WRITING.md
-examples/rain-lantern-12.txt
-examples/rain.txt
 examples/star-post-office.txt
-examples/track-shopping-8-brief.txt
-examples/wardrobe-trial-source.txt
 knowledge/novelai/tag-dictionary.json
 LICENSE
 README.md

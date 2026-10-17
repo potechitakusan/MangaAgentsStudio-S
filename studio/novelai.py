@@ -229,7 +229,7 @@ def generate(project_id, panel_id, request_id, expected_revision=None, *, page_n
                     raise db.StudioError('同じ要求IDを別の作品・コマには使えません')
                 return state['requests'][request_id]  # Idempotent replay never sends again.
             if state.get('halted'):
-                raise db.StudioError('費用台帳が停止中です。docsの復旧手順を確認してください')
+                raise db.StudioError('費用台帳が停止中です。使い方ガイドの「困ったとき」を確認してください')
             if state['spent'] >= budget_limit(state):
                 raise db.StudioError(f'検証費用が上限（{budget_limit(state)} Anlas）に達しました。右上の検証費用から、上限を変えるか0に戻してください')
             if any(r['status'] in ('sending', 'unknown') for r in state['requests'].values()):

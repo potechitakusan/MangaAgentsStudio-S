@@ -1,6 +1,6 @@
 """Page plan: the source split into pages before any storyboard is drawn.
 
-Why a separate step: measured on Strata (2026-10-17, docs/records/STRATA_UNITS.md), one call that both paces a chapter
+Why a separate step: measured on Strata (2026-10-17), one call that both paces a chapter
 and writes every panel either thins the detail (4-8 pages per call) or loses the pacing (1 page per call crams the
 chapter into the first pages and then repeats a scene). A short plan call (about 100 tokens per page) fixes the pacing;
 the storyboard calls then only draw the pages they were given, so any call size keeps the order."""

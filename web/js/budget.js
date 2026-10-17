@@ -7,7 +7,7 @@ function renderBudget(b) {
   $('budget-now').textContent = `いまの合計 ${b.spent} Anlas ／ 上限 ${b.limit} Anlas` + (last ? `（最後に0に戻した日時: ${localTime(last.at)}）` : '（まだ0に戻したことはありません）');
   $('budget-limit').value = b.limit;
   const stops = [b.halted ? `停止中: ${b.halted}` : '', b.unknown ? `結果が未確認の生成が ${b.unknown}件あります。` : ''].filter(Boolean).join(' ');
-  $('budget-halt').hidden = !stops; $('budget-halt').textContent = stops ? stops + '（0に戻しても解除されません。docs/guides/OPERATIONS.md の復旧手順を確認してください）' : '';
+  $('budget-halt').hidden = !stops; $('budget-halt').textContent = stops ? stops + '（0に戻しても解除されません。使い方ガイドの「困ったとき」を確認してください）' : '';
   const rows = [...b.resets.map(r => ({at: r.at, text: `0に戻した（戻す前の合計 ${r.spent_before} Anlas、上限 ${r.limit}）`})),
                 ...b.limit_changes.map(c => ({at: c.at, text: `上限を ${c.previous} → ${c.limit} Anlas に変更`}))].sort((x, y) => y.at.localeCompare(x.at));
   $('budget-history').replaceChildren(...(rows.length ? rows.map(r => el('div', `${localTime(r.at)}　${r.text}`)) : [el('div', 'まだ変更はありません', 'hint')]));

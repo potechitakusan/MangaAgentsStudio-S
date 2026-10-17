@@ -91,7 +91,10 @@ class StudioTests(unittest.TestCase):
         with patch.object(novelai, 'status', side_effect=[self.state,after]), patch.object(novelai, 'request', return_value=self.png.getvalue()):
             novelai.generate('test', 'p1-1', 'unexpected')
         self.assertEqual(novelai.ledger()['spent'], 10)
-        with self.assertRaises(db.StudioError): novelai.generate('test', 'p1-2', 'halted')
+        with patch.object(novelai, 'request') as send:
+            with self.assertRaisesRegex(db.StudioError, '費用台帳が停止中です。使い方ガイドの「困ったとき」'):
+                novelai.generate('test', 'p1-2', 'halted')
+            send.assert_not_called()
         db.dump(novelai.ledger_path(), {'spent':5000,'requests':{}})
         with patch.object(novelai, 'request') as send:
             with self.assertRaises(db.StudioError): novelai.generate('test', 'p1-2', 'over')

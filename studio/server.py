@@ -8,9 +8,9 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit, parse_qs
 from . import project as db
-from . import novelai
+from . import novelai, images
 from . import wholepage
-from . import workspace, layouts, exporting, profiles, llm, backup
+from . import workspace, layouts, exporting, profiles, llm, backup, references, library, rendering
 from .compose import compose
 from .jobs import JOBS, JOB_LOCK, save_job, job_run, _job_run, start_job
 
@@ -19,7 +19,9 @@ WEB = db.ROOT / 'web'
 STATIC_TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8'}
 
 def get_session(self, query):
-    return self.send(dict(token=TOKEN, templates={k: len(v) for k, v in db.TEMPLATES.items()},layouts=layouts.catalog(db.TEMPLATES),styles=workspace.STYLE_PRESETS,system=workspace.system_defaults(),expressions=profiles.EXPRESSIONS,llm_providers=llm.options()))
+    catalog = [dict(item, pixel_polygons=rendering.geometry(dict(template=item['id'])))
+               for item in layouts.catalog(db.TEMPLATES)]
+    return self.send(dict(token=TOKEN, templates={k: len(v) for k, v in db.TEMPLATES.items()},layouts=catalog,styles=workspace.STYLE_PRESETS,system=workspace.system_defaults(),expressions=profiles.EXPRESSIONS,llm_providers=llm.options()))
 
 def get_tag_dictionary(self, query):
     # Candidate tags for the "辞書からタグを選ぶ" picker (knowledge/novelai/tag-dictionary.json, built by tools/prompt_lab/build_tag_dictionary.py).
@@ -27,7 +29,39 @@ def get_tag_dictionary(self, query):
     return self.send(db.read_json(path) if path.exists() else dict(groups={}, concepts=[]))
 
 def get_projects(self, query):
-    return self.send(db.list_projects())
+    return self.send(library.visible())
+
+def get_library(self, query):
+    return self.send(library.catalog())
+
+def post_library_visibility(self, data):
+    return self.send(library.set_visibility(data['project_id'], data['excluded'], data.get('confirmed')))
+
+def post_library_import(self, data):
+    result = library.import_folder(data.get('path'))
+    if db.load(result['id'])['pages']:
+        try: compose(result['id'])
+        except (db.StudioError, OSError, ValueError) as exc:
+            result['warning'] = '作品は読込み済みですが組版に失敗しました。「再組版」で再実行してください: ' + str(exc)
+    return self.send(result)
+
+def post_library_choose(self, data):
+    return self.send(library.choose_folder())
+
+def post_panel_position(self, data):
+    with db.LOCK:
+        p = db.load(data['project_id'])
+        if p.get('render_mode') == 'whole': raise db.StudioError('位置調整はコマ別生成の作品で使えます')
+        panel = db.panel_by_id(p, data['panel_id'])
+        if not panel.get('image'): raise db.StudioError('先にコマ画像を用意してください')
+        number = next(n for n, page in enumerate(p['pages'], 1) if panel in page['panels'])
+        p = db.edit_panel(p['id'], data['revision'], panel['id'],
+            dict(image_transform=data['transform'], crop=data.get('crop', panel.get('crop', [.5, .5]))))
+    return self.send(dict(project=p, page_number=number))
+
+def post_compose_page(self, data):
+    if type(data.get('page_number')) is not int: raise db.StudioError('ページ番号が不正です')
+    return self.send(rendering.compose(data['project_id'], page_number=data['page_number']))
 
 def get_project(self, path):
     project_id = path.split('/')[-1]
@@ -36,16 +70,16 @@ def get_project(self, path):
     generation_state={}
     for number,page in enumerate(p['pages'],1):
         if p.get('render_mode')=='whole':
-            try: generation_state[f'page-{number}']=novelai.is_stale(p,page_number=number)
+            try: generation_state[f'page-{number}']=images.is_stale(p,page_number=number)
             except db.StudioError: generation_state[f'page-{number}']=True
         else:
             for panel in page['panels']:
-                try: generation_state[panel['id']]=novelai.is_stale(p,panel=panel)
+                try: generation_state[panel['id']]=images.is_stale(p,panel=panel)
                 except db.StudioError: generation_state[panel['id']]=True
     return self.send(dict(project=p, manifest=db.read_json(manifest) if manifest.exists() else None,
                           sections=db.source_sections(project_id),
                           whole_settings=[wholepage.settings(p,n) for n in range(1,len(p['pages'])+1)],
-                          inputs=workspace.editable(p),generation_state=generation_state,review=db.read_json(db.directory(project_id)/'review.json') if (db.directory(project_id)/'review.json').exists() else None))
+                          inputs=workspace.editable(p),references=references.catalog(p),generation_state=generation_state,review=db.read_json(db.directory(project_id)/'review.json') if (db.directory(project_id)/'review.json').exists() else None))
 
 def get_job(self, path):
     job = JOBS.get(path.split('/')[-1])
@@ -74,13 +108,14 @@ def get_asset(self, query):
     return self.send(target.read_bytes(), content_type=mimetypes.guess_type(target.name)[0] or 'application/octet-stream')
 
 def post_create(self, data):
-    p=db.create(data['id'], data['title'], data['source'])
     mode=data.get('render_mode','panels')
     if mode not in ('panels','whole'): raise db.StudioError('生成方式が不正です')
+    p=db.create(data['id'], data['title'], data['source'], images.method(data.get('output_method')))
     style=dict(source=data['source'],text_mode='overlay',render_mode=mode,style_ja='アニメ塗り、明瞭な線、映画的な照明')
     # New works layer their own (empty) prompts on the general ones; a caller that sends 'system' keeps the old standalone behaviour.
     if 'system' in data: p=workspace.save(p['id'],p['revision'],dict(system=data['system'],**style))
     else: p=workspace.save(p['id'],p['revision'],dict(system=dict(workspace.EMPTY_SYSTEM),system_layered=True,**style))
+    library.set_visibility(p['id'], False)
     return self.send(p)
 
 def post_workspace(self, data):
@@ -90,7 +125,13 @@ def post_default_system(self, data):
     return self.send(workspace.save_defaults(data['system']))
 
 def post_preview_request(self, data):
-    return self.send(profiles.preview(db.load(data['project_id']),data['preview']))
+    return self.send(images.preview(db.load(data['project_id']),data['preview']))
+
+def post_reference_adopt(self, data):
+    return self.send(references.adopt(data['project_id'],data['revision'],data['candidate_id']))
+
+def post_image_status(self, data):
+    return self.send(images.adapter(db.load(data['project_id'])).status())
 
 def post_preview_history(self, data):
     return self.send(profiles.history(data['project_id']))
@@ -130,8 +171,14 @@ def post_page_plan(self, data):
 
 def post_page_request(self, data):
     p = db.load(data['project_id'])
-    return self.send(dict(request=novelai.build_page_request(p,data['page_number']),
-                          preview=wholepage.compile_prompt(p,data['page_number'])))
+    number=data['page_number']
+    request=images.build_page_request(p,number)
+    if request.get('provider')=='qwen':
+        draft=wholepage.settings(p,number)['draft']
+        dialogue='\n\n'.join(line for panel in draft['panels'] for line in panel.get('dialogue',[])) if p.get('text_mode','embedded')=='embedded' else ''
+        preview=dict(prompt_characters=len(request['input']),text_characters=len(dialogue))
+    else: preview=wholepage.compile_prompt(p,number)
+    return self.send(dict(request=request,preview=preview))
 
 def post_page_adopt(self, data):
     p = wholepage.adopt(data['project_id'],data['revision'],data['page_number'],data['candidate_id'])
@@ -164,11 +211,12 @@ def post_status(self, data):
 
 def post_request(self, data):
     p = db.load(data['project_id'])
-    return self.send(novelai.build_request(p, db.panel_by_id(p, data['panel_id'])))
+    return self.send(images.build_request(p, db.panel_by_id(p, data['panel_id'])))
 
 GET_ROUTES = {
     '/api/session': get_session,
     '/api/projects': get_projects,
+    '/api/library': get_library,
     '/api/tag-dictionary': get_tag_dictionary,
     '/api/jobs': get_jobs,
     '/api/project-storage': get_project_storage,
@@ -177,6 +225,13 @@ GET_ROUTES = {
 }
 
 POST_ROUTES = {
+    '/api/library-visibility': post_library_visibility,
+    '/api/library-import': post_library_import,
+    '/api/library-choose': post_library_choose,
+    '/api/panel-position': post_panel_position,
+    '/api/compose-page': post_compose_page,
+    '/api/reference-adopt': post_reference_adopt,
+    '/api/image-status': post_image_status,
     '/api/create': post_create,
     '/api/workspace': post_workspace,
     '/api/default-system': post_default_system,

@@ -1,6 +1,8 @@
-"""UI test of the tabbed workspace in an isolated Firefox. No image generation; creates and then trashes one throw-away work.
+"""UI test of the tabbed workspace in an isolated Firefox. No image generation; creates and trashes isolated fixtures.
 Run: PYTHONPATH=.runtime/test-deps PLAYWRIGHT_BROWSERS_PATH=.runtime/browsers python -X utf8 tests/browser_layout.py [port]"""
 import json
+import copy
+import atexit
 import re
 import shutil
 import sys
@@ -9,11 +11,45 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from PIL import Image
+from studio import project as db, wholepage, backup
+from studio.compose import compose
 BASE = 'http://127.0.0.1:' + (sys.argv[1] if len(sys.argv) > 1 else '8765')
 SHOTS = ROOT / '.runtime' / 'layout-shots'
 SHOTS.mkdir(parents=True, exist_ok=True)
 errors = []
 test_id = 'layout-test-' + uuid.uuid4().hex[:6]
+fixtures=[]
+def cleanup_fixtures():
+    for pid in fixtures:
+        if db.directory(pid).exists(): backup.soft_delete(pid,pid)
+atexit.register(cleanup_fixtures)
+
+def fixture(suffix,pages=1,whole=False):
+    pid=test_id.replace('layout-test-','layout-fixture-')+'-'+suffix
+    p=db.create(pid,pid,'## 第一章\nテスト用の原作。','novelai');fixtures.append(pid)
+    board=db.read_json(ROOT/'templates/board.example.json');board['title']=pid
+    sample=board['pages'][0];board['pages']=[copy.deepcopy(sample) for _ in range(pages)]
+    board['props']=[dict(id='umbrella',name='傘',description='red umbrella')]
+    board['locations']=[dict(id='station',name='駅前',description='train station entrance')]
+    for i,page in enumerate(board['pages'],1):
+        for j,panel in enumerate(page['panels'],1):panel.update(id=f'p{i}-{j}',location_id='station')
+    p=db.import_board(pid,0,board)
+    folder=db.directory(pid)/'images';folder.mkdir(exist_ok=True)
+    Image.new('RGB',(832,1216),'#c9dad4').save(folder/'placeholder.png')
+    def fill(p):
+        p['render_mode']='whole' if whole else 'panels'
+        p['batches']=[dict(start_page=1,end_page=4,source_section=0,source_title='第一章',handoff='次の場面へ',created_at=db.now())]
+        for number,page in enumerate(p['pages'],1):
+            for panel in page['panels']:panel['image']='images/placeholder.png'
+            if whole:page['whole']=dict(image='images/placeholder.png',generated_text_mode='embedded',format='prose',draft=wholepage.from_panels(p,number))
+    db.mutate(pid,p['revision'],fill);compose(pid)
+    return pid
+
+pager_id=fixture('pager',12)
+other_id=fixture('other')
+whole_id=fixture('whole',whole=True)
 width = lambda page, selector: page.locator(selector).bounding_box()['width']
 top = lambda page, selector: page.locator(selector).first.bounding_box()['y']
 
@@ -65,7 +101,7 @@ with sync_playwright() as p:
     expect(page.locator('#projects')).to_be_visible()
 
     # --- an older work: pager, zoom, page generation, work tab content ------------------------------------
-    page.get_by_role('button', name='lantern-12', exact=False).first.click()
+    page.get_by_role('button', name=pager_id, exact=False).first.click()
     expect(page.locator('#subtitle')).to_contain_text('12 / 24 ページ', timeout=15000)
     expect(page.locator('#page-image')).to_be_visible(timeout=15000)
     total = int(page.locator('#page-position').inner_text().split('/')[1])
@@ -100,10 +136,10 @@ with sync_playwright() as p:
     page.wait_for_timeout(400)
     page.screenshot(path=str(SHOTS / 'zoom-2.0-1920.png'))
     page.reload(wait_until='networkidle')
-    page.get_by_role('button', name='雨の日の青い傘', exact=False).first.click()   # a different work keeps the same choice
+    page.get_by_role('button', name=other_id, exact=False).first.click()   # a different work keeps the same choice
     expect(page.locator('#subtitle')).to_contain_text('/ 24 ページ', timeout=15000)
     expect(page.locator('.zoom-button[data-zoom="2"]')).to_have_attribute('aria-pressed', 'true')
-    page.get_by_role('button', name='lantern-12', exact=False).first.click()
+    page.get_by_role('button', name=pager_id, exact=False).first.click()
     expect(page.locator('#subtitle')).to_contain_text('12 / 24 ページ', timeout=15000)
     page.locator('.zoom-button[data-zoom="1"]').click()
 
@@ -179,7 +215,7 @@ with sync_playwright() as p:
     assert top(page, '#panel-negative-ja textarea') < top(page, '#negative')
     ja, en = page.locator('#characters [data-field="prompt_ja"]').first, page.locator('#characters [data-field="prompt"]').first
     assert ja.bounding_box()['y'] < en.bounding_box()['y']
-    expect(page.locator('#tab-page')).to_contain_text('英語・NovelAIへ送信')
+    expect(page.locator('#tab-page')).to_contain_text('英語・画像モデルへ送信')
     expect(page.locator('#tab-page')).to_contain_text('日本語・確認用')
     boxes = page.locator('#prop-ids input[type=checkbox]')
     assert boxes.count() >= 1
@@ -190,7 +226,7 @@ with sync_playwright() as p:
     expect(page.locator('#dirty-list')).to_contain_text('このコマに映る固定小物')     # says what is unsaved
     expect(page.locator('#dirty-list')).to_contain_text('場面メモ')
     page.screenshot(path=str(SHOTS / 'page-tab-1920.png'))
-    page.get_by_role('button', name='雨の日の青い傘', exact=False).first.click()   # asks before discarding, and names the edits
+    page.get_by_role('button', name=other_id, exact=False).first.click()   # asks before discarding, and names the edits
     expect(page.locator('#subtitle')).to_contain_text('/ 24 ページ', timeout=15000)
     assert any('未保存の項目' in m and '固定小物' in m and '場面メモ' in m for m in dialogs), dialogs
     expect(page.locator('#dirty-list')).to_be_hidden()
@@ -198,7 +234,7 @@ with sync_playwright() as p:
     expect(page.locator('#side-dirty')).to_have_text('保存済み')
 
     # --- page-batch work shows the page-level editor inside the same tab -------------------------------
-    page.get_by_role('button', name='wholepage-demo', exact=False).first.click()
+    page.get_by_role('button', name=whole_id, exact=False).first.click()
     expect(page.locator('#mode-label')).to_contain_text('ページ一括', timeout=15000)
     expect(page.locator('#page-image')).to_be_visible(timeout=15000)
     page.locator('#tab-btn-page').click()
@@ -292,6 +328,7 @@ with sync_playwright() as p:
 
 # clean the throw-away artefacts of this test only
 for path in list((ROOT / 'work' / '_trash').glob(test_id + '-*')) + [ROOT / 'work' / '_backups' / test_id]:
+    assert path.resolve().is_relative_to((ROOT/'work').resolve()) and path.name.startswith(test_id)
     shutil.rmtree(path, ignore_errors=True)
 assert not errors, errors
 print('browser layout test passed; screenshots in', SHOTS)

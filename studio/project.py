@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / 'work'
 LOCK = threading.RLock()
 MAX_PAGES = 24
-PANEL_FIELDS = ('id', 'scene', 'prompt', 'prompt_ja', 'negative', 'negative_ja', 'characters', 'dialogue', 'speakers', 'seed', 'crop', 'location_id', 'prop_ids', 'needs_edit')
+PANEL_FIELDS = ('id', 'scene', 'prompt', 'prompt_ja', 'negative', 'negative_ja', 'characters', 'dialogue', 'speakers', 'seed', 'crop', 'image_transform', 'location_id', 'prop_ids', 'needs_edit')
 TEMPLATES = {
     'three': [(0, 0, 1, .44), (.51, .46, .49, .54), (0, .46, .49, .54)],
     'three-wide': [(0, 0, 1, .30), (0, .32, 1, .30), (0, .64, 1, .36)],
@@ -77,7 +77,10 @@ def load(project_id):
     path = directory(project_id) / 'project.json'
     if not path.exists():
         raise StudioError('作品がありません')
-    return read_json(path)
+    result = read_json(path)
+    from . import images
+    images.for_project(result)
+    return result
 
 def text_field(value, name, limit=4000, empty=False):
     if not isinstance(value, str) or len(value) > limit or (not empty and not value.strip()):
@@ -191,8 +194,19 @@ def validate_panel(p, cast_ids, allow_incomplete=False):
     crop = p.get('crop', [.5, .5])
     if not isinstance(crop, list) or len(crop) != 2 or any(type(v) not in (int, float) or not 0 <= v <= 1 for v in crop):
         raise StudioError(f'cropは画像を当てる中心座標[x,y]（各0〜1）の2個です。受け取った値: {str(crop)[:60]}')
+    if 'image_transform' in p:
+        validate_image_transform(p['image_transform'])
 
-def create(project_id, title, source):
+def validate_image_transform(value):
+    if not isinstance(value, dict) or set(value) != {'x', 'y', 'scale'}:
+        raise StudioError('画像位置はx・y・scaleで指定してください')
+    for key, low, high in (('x', -2, 2), ('y', -2, 2), ('scale', .1, 4)):
+        if type(value[key]) not in (int, float) or not low <= value[key] <= high:
+            raise StudioError(f'画像位置の{key}は{low}〜{high}です')
+
+def create(project_id, title, source, output_method='novelai'):
+    from . import images
+    images.method(output_method)
     text_field(title, '作品名', 120)
     text_field(source, '原作', 200000)
     folder = directory(project_id)
@@ -205,6 +219,11 @@ def create(project_id, title, source):
             (folder / name).write_text(origin.read_text(encoding='utf-8'), encoding='utf-8')
         project = dict(id=project_id, title=title, revision=0, style='anime coloring, clean lineart, cinematic lighting',
                        characters=[], locations=[], props=[], batches=[], pages=[], created_at=now())
+        project.update(output_method=output_method, image_settings=dict(anime_finish=False, denoise=.3,
+                       reference_mode='references' if output_method == 'qwen' else 'prompt'), references={})
+        example = read_json(folder / 'board.example.json')
+        example['output_method'] = output_method
+        dump(folder / 'board.example.json', example)
         dump(folder / 'project.json', project)
         return project
 
@@ -215,6 +234,9 @@ def mutate(project_id, revision, fn):
             raise StudioError('編集競合: 最新の作品を読み直してください（未保存の内容はコピーして退避できます）')
         new = copy.deepcopy(old)
         fn(new)
+        from . import images
+        images.require_match(old, new)
+        images.for_project(new)
         if new['pages']: validate_board(new, allow_incomplete=new.get('workspace_version')==2)
         new['revision'] += 1
         new['updated_at'] = now()
@@ -225,6 +247,8 @@ def mutate(project_id, revision, fn):
 def import_board(project_id, revision, board):
     validate_board(board)
     def apply(p):
+        from . import images
+        images.require_match(p, board)
         if p['pages']: raise StudioError('既存作品への全体上書き取込はできません。新規作品で取り込んでください')
         # Input cannot smuggle image paths, histories or revision fields.
         p.update({k: copy.deepcopy(board[k]) for k in ('title', 'style', 'characters')})
@@ -334,6 +358,14 @@ def edit_panel(project_id, revision, panel_id, patch, consumed_input=None):
 
 def list_projects():
     WORK.mkdir(exist_ok=True)
-    items = [(p.get('created_at', ''), dict(id=p['id'], title=p['title'], revision=p['revision'], pages=len(p['pages'])))
-             for f in sorted(WORK.glob('*/project.json')) for p in [read_json(f)]]
+    items = []
+    for f in sorted(WORK.glob('*/project.json')):
+        try:
+            identifier(f.parent.name)
+            if not f.resolve().is_relative_to(WORK.resolve()): continue
+            p = read_json(f)
+            if p['id'] != f.parent.name: continue
+            items.append((p.get('created_at', ''), dict(id=p['id'], title=p['title'], revision=p['revision'], pages=len(p['pages']), output_method=p.get('output_method'), compatible=p.get('output_method') in ('novelai','qwen'))))
+        except (StudioError, OSError, ValueError, KeyError, TypeError):
+            continue
     return [item for _, item in sorted(items, key=lambda x: x[0], reverse=True)]   # newest first; ISO UTC strings sort by time

@@ -5,6 +5,9 @@ function renderPanelEditor() {
   const p = current(); $('panel-title').textContent = `コマ ${p.id}`; for (const k of ['scene','prompt','negative']) $(k).value = p[k] || '';
   $('dialogue').value = (p.dialogue || []).join('\n'); $('seed').value = p.seed ?? ''; $('crop-x').value = (p.crop || [.5,.5])[0]; $('crop-y').value = (p.crop || [.5,.5])[1];
   $('panel-image').hidden = !p.image; if (p.image) $('panel-image').src = asset(p.image);
+  $('adjust-position').hidden = !p.image || isWhole();
+  $('panel-image').classList.toggle('position-editable', !!p.image && !isWhole());
+  $('panel-image').title = p.image && !isWhole() ? 'ダブルクリックで位置調整' : '';
   $('setting-fields').hidden = !(project.locations || []).length;
   $('location-id').replaceChildren(el('option', '（指定なし）'), ...(project.locations || []).map(l => { const opt = el('option', l.name); opt.value=l.id; return opt; })); $('location-id').firstChild.value=''; $('location-id').value=p.location_id || '';
   $('prop-ids').replaceChildren(...(project.props || []).map(l => { const box = el('label', undefined, 'check-item'); const input = el('input'); Object.assign(input, {type:'checkbox', value:l.id, checked:(p.prop_ids || []).includes(l.id)}); box.append(input, el('span', l.name)); return box; }));
@@ -13,13 +16,13 @@ function renderPanelEditor() {
   for (const c of p.characters || []) {
     const card = el('div', undefined, 'character-card'); card.dataset.id = c.id; const cast = project.characters.find(x => x.id === c.id);
     card.append(el('strong', cast?.name || c.id), el('p', cast?.appearance || ''));
-    const caption = el('textarea'); caption.value = c.prompt; caption.rows = 2; caption.dataset.field = 'prompt'; caption.setAttribute('aria-label', `${cast?.name}の動作・表情`); const captionLabel = el('label', '動作・表情（英語・NovelAIへ送信）'); captionLabel.append(caption); card.append(captionLabel);
+    const caption = el('textarea'); caption.value = c.prompt; caption.rows = 2; caption.dataset.field = 'prompt'; caption.setAttribute('aria-label', `${cast?.name}の動作・表情`); const captionLabel = el('label', '動作・表情（英語・画像モデルへ送信）'); captionLabel.append(caption); card.append(captionLabel);
     const row = el('div', undefined, 'field-row'); for (const key of ['x','y']) { const label = el('label', key === 'x' ? '位置 横 0〜1' : '位置 縦 0〜1'); const input = el('input'); Object.assign(input, {type:'number',min:0,max:1,step:'any',value:c[key] ?? .5}); input.dataset.field = key; label.append(input); row.append(label); } card.append(row); $('characters').append(card);
   }
   $('candidate-list').replaceChildren();
-  for (const c of p.candidates || []) { const b = el('button', c.id === p.adopted_request ? '採用中' : `候補 ${c.seed}`, c.id === p.adopted_request ? 'active' : ''); b.title = `Seed ${c.seed} / 生成時 revision ${c.revision}`; b.onclick = () => action(async () => { if (dirty) throw new Error('候補を変更する前に編集内容を保存してください'); await api('/api/adopt', {project_id:project.id, revision:project.revision, panel_id:p.id, candidate_id:c.id}); await load(project.id); status('候補画像を採用し、組版に反映しました'); }); $('candidate-list').append(b); }
+  for (const c of p.candidates || []) { const finished=c.operation==='finish_existing',label=finished?'LoRA仕上げ':`候補 ${c.seed}`; const b = el('button', c.id === p.adopted_request ? (finished?'採用中 · LoRA仕上げ':'採用中') : label, c.id === p.adopted_request ? 'active' : ''); b.title = `Seed ${c.seed} / 生成時 revision ${c.revision}`; b.onclick = () => action(async () => { if (dirty) throw new Error('候補を変更する前に編集内容を保存してください'); await api('/api/adopt', {project_id:project.id, revision:project.revision, panel_id:p.id, candidate_id:c.id}); await load(project.id); status('候補画像を採用し、組版に反映しました'); }); $('candidate-list').append(b); }
   $('sent-request').hidden = !p.image;
-  if (p.image) $('sent-request').href = asset(p.image.replace(/\.png$/, '.request.json'));
+  if (p.image) $('sent-request').href = asset(p.image.replace(/\.png$/, (p.candidates||[]).find(c=>c.id===p.adopted_request)?.operation==='finish_existing'?'.finish-request.json':'.request.json'));
   $('request-preview').textContent = '';
   // Japanese check fields come first, then the English text that is sent.
   for(const key of ['prompt','negative']){const parent=$(`panel-${key}-ja`);parent.replaceChildren();const t=textField(parent,key==='prompt'?'画像プロンプト（日本語・確認用）':'除外する内容（日本語・確認用）',p[key+'_ja']||'',null,key==='prompt'?3:2);t.id=key+'-ja';const actions=el('div',undefined,'translation-actions');actionButton(actions,'日本語 → 英語',()=>translateField(t,$(key),'en'));actionButton(actions,'英語 → 日本語',()=>translateField($(key),t,'ja'));parent.append(actions);}

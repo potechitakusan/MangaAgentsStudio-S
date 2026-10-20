@@ -37,6 +37,8 @@
   font-size:11px;
   line-height:1.9;
 }
+#manage-library { width:100%; margin:8px 0; }
+main.library-collapsed #manage-library { display:none; }
 @media(max-width:1050px) {
   .library {
     width:160px;

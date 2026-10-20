@@ -9,15 +9,15 @@
 <link rel="stylesheet" href="/css/trial.css">
 <link rel="stylesheet" href="/css/dialogs.css"></head>
 <body>
-<header><div class="brand"><span class="mark">S</span><div><strong>MangaAgentsStudio</strong><small>STRATA / GROK × NOVELAI</small></div></div><div class="header-actions"><a id="guide-link" class="button-link" href="/guide/index.html" target="_blank" rel="noopener" title="使い方ガイドを別のタブで開きます">使い方</a><button id="budget" class="subtle budget-button" type="button" title="検証費用の上限の変更・0に戻す">検証費用 —</button><button id="account" class="subtle">接続・残量を確認</button></div></header>
+<header><div class="brand"><span class="mark">S</span><div><strong>MangaAgentsStudio</strong><small>STRATA / GROK × NOVELAI / QWEN</small></div></div><div class="header-actions"><a id="guide-link" class="button-link" href="/guide/index.html" target="_blank" rel="noopener" title="使い方ガイドを別のタブで開きます">使い方</a><button id="budget" class="subtle budget-button" type="button" title="検証費用の上限の変更・0に戻す">検証費用 —</button><button id="account" class="subtle">接続・残量を確認</button></div></header>
 <main>
-<aside class="library" id="library"><div class="section-heading"><span class="library-title">作品</span><span class="library-buttons"><button id="new-project" class="icon" aria-label="新しい作品">＋</button><button id="library-toggle" class="icon" type="button" data-nav aria-controls="projects" aria-expanded="true" aria-label="作品一覧を閉じる" title="作品一覧を閉じる">«</button></span></div><div id="projects"></div><div class="library-note">小説から、ひとコマずつ。<br>プロンプトを育てる制作室。</div></aside>
+<aside class="library" id="library"><div class="section-heading"><span class="library-title">作品</span><span class="library-buttons"><button id="new-project" class="icon" aria-label="新しい作品">＋</button><button id="library-toggle" class="icon" type="button" data-nav aria-controls="projects" aria-expanded="true" aria-label="作品一覧を閉じる" title="作品一覧を閉じる">«</button></span></div><button id="manage-library" type="button">管理</button><div id="projects"></div><div class="library-note">小説から、ひとコマずつ。<br>プロンプトを育てる制作室。</div></aside>
 <section class="workspace">
 <div class="project-heading"><div><div class="eyebrow">MANGA WORKSPACE</div><h1 id="title">漫画をつくる</h1><p id="subtitle">小説を用意して、新しい作品を始めましょう。</p></div><div class="toolbar"><button id="refresh" class="subtle">読み直す</button><button id="new-pages">続きのページを追加</button><button id="compose">再組版</button></div></div>
 <div id="status" role="status">準備完了</div>
 <div class="stage">
 <section class="stage-center">
-<div id="empty" class="empty"><span class="empty-symbol">▧</span><h2>原作を、漫画の一瞬に。</h2><p><span class="llm-name">Strata</span>が場面とプロンプトを組み立て、<br>NovelAIが描いたコマをページに仕上げます。</p><button id="empty-new" class="primary">小説から作品を作る</button></div>
+<div id="empty" class="empty"><span class="empty-symbol">▧</span><h2>原作を、漫画の一瞬に。</h2><p><span class="llm-name">Strata</span>が場面とプロンプトを組み立て、<br>選択した画像モデルが描いたコマをページに仕上げます。</p><button id="empty-new" class="primary">小説から作品を作る</button></div>
 <section id="setup" hidden><div class="card"><h2 id="batch-title">原作から字コンテを作成</h2><p>はじめに原作を何ページで描くか割り振り（ページ割り）、確認してから数ページずつ字コンテにします。同じ作品で最大24ページ。人物・背景・小物の設定は引き継がれます。<a href="/guide/index.html#steps" target="_blank" rel="noopener">手順を見る</a></p><div id="source-progress" class="lang-note source-progress" hidden></div><label>開始する原作の章 <span class="hint">「使用済み」の章でも、途中で終わった章は選び直せます</span><select id="source-section"></select></label><details><summary>選択した原作を読む</summary><pre id="source-preview"></pre></details><label>構成の希望 <span class="hint">任意。ページ割りと字コンテの両方に使います</span><textarea id="board-instruction" rows="2" placeholder="空欄で構いません。例：見せ場の告白は1ページ使う。コマ割りは場面に合わせて"></textarea></label>
 <h3 class="setup-step">1. ページ割り <span class="hint">おすすめ。原作のどこを何ページ目に描くかを決めます</span></h3><div class="field-row plan-row"><label>この章から最後までを <input id="plan-pages" type="number" min="1" max="24" value="12"> ページで描く</label><button id="plan-agent" type="button"><span class="llm-name">Strata</span>でページ割りを作る</button></div><p class="hint">原作全体を1回で割り振ります（数十秒）。結果は下の表で直せます。ページ割りがあると、字コンテは割り当てどおりの順序で作られ、場面の詰め込みや繰り返しが起きにくくなります。</p><div id="plan-view"></div>
 <h3 class="setup-step">2. 字コンテ</h3><p id="board-note" class="hint"></p><div class="field-row plan-row"><label>今回作るページ数 <input id="page-count" type="number" min="1" max="4" value="2"></label><button id="board-agent" class="primary"><span class="llm-name">Strata</span>で字コンテを作る</button></div><div class="actions"><button id="board-auto" type="button">ページ割りの最後まで自動で作る</button><button id="cancel-auto" type="button" data-cancel hidden>今のページの後で停止</button></div><p class="hint">自動作成は2ページずつ、毎回新しい依頼として順に作ります。失敗したところで止まり、作成済みのページは残ります。もう一度押すと続きから再開します。</p><details id="import-section"><summary>作成済み字コンテJSONを取り込む</summary><textarea id="import-json" rows="8" placeholder="title / style / characters / pages を含むJSON"></textarea><button id="import-board">取り込む</button></details></div></section>
@@ -29,18 +29,20 @@
 <div class="side-head"><div class="tabs" role="tablist" aria-label="編集の種類"><button id="tab-btn-general" class="tab" role="tab" type="button" data-nav aria-controls="tab-general" aria-selected="false">汎用</button><button id="tab-btn-work" class="tab" role="tab" type="button" data-nav aria-controls="tab-work" aria-selected="true">作品専用</button><button id="tab-btn-page" class="tab" role="tab" type="button" data-nav aria-controls="tab-page" aria-selected="false">ページ／コマ個別</button></div><span id="side-dirty" class="badge">保存済み</span><button id="save-all" type="button" class="primary" disabled title="未保存の変更をまとめて保存します（Ctrl+S）">すべて保存</button></div>
 <div id="dirty-list" class="dirty-list" hidden></div>
 <div id="tab-general" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-general" hidden>
-<p class="hint tab-lead">どの作品でも使いまわせる制御です。制作AIの選択と、全作品共通のシステムプロンプト。</p>
+<p class="hint tab-lead">全作品共通の制作AI・システムプロンプトを設定します。</p>
 <section class="llm-controls"><label for="llm-provider">制作AI <select id="llm-provider"><option value="strata">Strata（ローカル・標準）</option><option value="grok">Grok（CLIログイン）</option></select></label><p id="llm-note" class="hint"></p></section>
+
 <section id="workbench-general" class="workbench-card"><div class="section-heading"><span>共通システムプロンプト（全作品）</span><button id="save-global" type="button">汎用を保存</button></div><p class="hint">どの作品でも、実行時にこの内容が先に使われ、「作品専用」の内容が後ろに連結されます。変更は次の実行から全作品へ反映されます。</p><div id="global-system-fields"></div></section>
 </div>
 <div id="tab-work" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-work">
 <p class="hint tab-lead">この作品だけの設定です。原作、人物・背景・小物のタグ名、生成と書き出し、作品の管理。</p>
+<section id="work-image-settings" class="workbench-card" hidden><div class="section-heading"><span>画像生成 · <strong id="image-provider-label"></strong></span></div><p class="hint">画像モデルは作成時に固定されます。別モデルの設定JSONは取り込めません。</p><div id="qwen-options" hidden><label>キャラクター・背景の制御<select id="reference-mode"><option value="references">登録した参照画像を使う（人物・衣装別／背景）</option><option value="prompt">プロンプトのみ</option></select></label><label class="choice"><input id="anime-finish" type="checkbox">Anima＋LoRAでアニメ調に仕上げる</label><label>仕上げのdenoise<input id="anime-denoise" type="number" min="0.25" max="0.35" step="0.01" value="0.30"></label><p class="hint">下の試し描きで人物（全身・衣装別）と背景を一度作り、画像を確認して「参照画像に登録」を押します。各コマでは必要な画像だけをimage1、image2…として再利用します。外見・衣装・画風の変更後は参照を更新してください。試し描き自体は常にプロンプトから生成します。</p><div id="reference-catalog"></div></div><p id="image-provider-note" class="hint"></p><p class="hint"><a href="/guide/qwen-image.html" target="_blank" rel="noopener">Qwenの使い方・必要モデル</a></p><div class="actions"><button id="save-image-provider">作品の画像設定を保存</button><button id="check-image-provider">接続確認</button></div><p id="image-provider-status" class="hint" role="status"></p></section>
 <section id="workbench-common" class="workbench-card">
 <div class="section-heading"><span>作品の設定（原作・絵柄・システム・台帳・改稿）</span><button id="save-common">設定を保存</button></div>
 <details id="source-details"><summary>作品名・原作小説</summary><label>作品名<input id="edit-title" data-config-path="title"></label><label>原作<textarea id="edit-source" data-config-path="source" rows="10" maxlength="200000"></textarea></label></details>
-<details id="style-details" open><summary>絵柄（プリセット・共通の除外）</summary><label>絵柄プリセット<select id="style-preset"></select></label><div id="style-fields"></div><p class="hint">プリセットを選ぶと絵柄と共通除外を入力欄へ反映します。英語がNovelAIへ送られ、日本語は確認用です。</p></details>
+<details id="style-details" open><summary>絵柄（プリセット・共通の除外）</summary><label>絵柄プリセット<select id="style-preset"></select></label><div id="style-fields"></div><p class="hint">プリセットを選ぶと絵柄と共通除外を入力欄へ反映します。英語が画像モデルへ送られ、日本語は確認用です。</p></details>
 <details id="system-details"><summary>作品専用システムプロンプト</summary><label class="inline-check"><input id="system-layered" type="checkbox">汎用の共通システムプロンプトと連結して使う</label><p id="system-layer-note" class="hint"></p><div id="system-fields"></div><div class="actions"><button id="system-preview-button" type="button">連結結果を確認</button></div><pre id="system-preview"></pre></details>
-<details id="catalog-details"><summary>キャラクターの外見・口調／背景／小物</summary><p class="hint lang-note">NovelAIへ送られるのは英語の欄です。日本語の欄は確認・編集用で、画像生成には送られません。</p><div id="catalog-fields"></div><p class="hint">共通設定の変更は次回の画像生成へ適用されます。既存の台詞やコマの文章も直す場合は、下の<span class="llm-name">Strata</span>改稿を使います。</p><button id="translate-missing">未翻訳の共通設定・コマを日本語へ翻訳</button></details>
+<details id="catalog-details"><summary>キャラクターの外見・口調／背景／小物</summary><p class="hint lang-note">画像モデルへ送られるのは英語の欄です。日本語の欄は確認・編集用で、画像生成には送られません。</p><div id="catalog-fields"></div><p class="hint">共通設定の変更は次回の画像生成へ適用されます。既存の台詞やコマの文章も直す場合は、下の<span class="llm-name">Strata</span>改稿を使います。</p><button id="translate-missing">未翻訳の共通設定・コマを日本語へ翻訳</button></details>
 <div class="revision-tools"><label>既存ページへの修正依頼<textarea id="rewrite-instruction" rows="2" placeholder="例：共通設定の新しい外見・背景に統一し、澪の台詞を丁寧な口調に直す"></textarea></label><div class="actions"><button id="rewrite-page">このページを<span class="llm-name">Strata</span>で改稿</button><button id="rewrite-all">全ページを<span class="llm-name">Strata</span>で改稿</button></div></div>
 </section>
 <div id="mode-controls" hidden><p>この作品の生成方式: <strong id="mode-label"></strong></p><p id="mode-note"></p></div>
@@ -51,17 +53,17 @@
 </div>
 <div id="tab-page" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-page" hidden>
 <p id="page-tab-empty" class="hint" hidden>字コンテを作ると、選択中のページ・コマをここで編集できます。</p>
-<div id="page-tab-body"><p class="hint lang-note">NovelAIへ送るプロンプトは英語が原則です。日本語の欄は確認・編集用で、画像生成には送られません（台詞だけは日本語のまま文字になります）。</p>
-<h3 class="tab-heading">ページ個別</h3><p class="hint">コマ枠の変更と、ページ一括生成（NovelAIがページを1枚で描く方式）の設計・送信設定。選択中のページが対象です。</p>
+<div id="page-tab-body"><p class="hint lang-note">画像モデルへ送るプロンプトは英語が原則です。日本語の欄は確認・編集用で、画像生成には送られません（台詞だけは日本語のまま文字になります）。</p>
+<h3 class="tab-heading">ページ個別</h3><p class="hint">コマ枠の変更と、ページ一括生成（画像モデルがページを1枚で描く方式）の設計・送信設定。選択中のページが対象です。</p>
 <details id="layout-details"><summary>コマ枠・コマ数を変更</summary><label>テンプレート<select id="layout-select"></select></label><div id="layout-preview"></div><button id="apply-layout">このコマ枠に変更</button><p class="hint">コマ数を減らすと末尾から外します。変更前の内容と画像は保存履歴に残ります。</p><div class="actions"><button id="add-panel">コマを1つ増やす</button><button id="remove-panel">最後のコマを減らす</button></div><label>作品全体のコマ数倍率 <span class="hint">全ページが対象</span><input id="panel-multiplier" type="number" min="0.5" max="2" step="0.1" value="1.2"></label><button id="scale-panels">全ページのコマ数を倍率で増減</button></details>
 <section id="whole-editor" class="editor" hidden>
 <div class="section-heading"><span id="whole-title">ページ全体を編集</span><span id="whole-dirty" class="badge">保存済み</span></div>
 <p>コマ割りと絵を1枚で生成します。フキダシの方式を下で選び、生成後にコマ配置と文字を確認してください。</p>
 <div id="whole-candidates"></div>
 <form id="whole-form"><label>送信形式<select id="whole-format"><option value="prose">漫画用の文章に変換</option><option value="json">JSONを直接送信（比較用）</option><option value="yaml">YAMLを直接送信（比較用）</option></select></label>
-<label>フキダシと文字<select id="whole-text-mode"><option value="overlay">後付け（台詞なしPNG・分離PSDに対応）</option><option value="embedded">NovelAIが画像内へ描く</option></select></label>
-<p class="hint">後付けではアプリの台詞を分離できますが、NovelAIが余計な文字を描く場合は原画に残ります。枠・文字位置を正確に合わせる場合はコマ別モードを使ってください。</p>
-<p class="hint">JSON/YAMLはこのアプリの設計形式です。NovelAIの専用漫画スキーマではありません。</p>
+<label>フキダシと文字<select id="whole-text-mode"><option value="overlay">後付け（台詞なしPNG・分離PSDに対応）</option><option value="embedded">画像モデルが画像内へ描く</option></select></label>
+<p class="hint">後付けではアプリの台詞を分離できますが、画像モデルが余計な文字を描く場合は原画に残ります。枠・文字位置を正確に合わせる場合はコマ別モードを使ってください。</p>
+<p class="hint">JSON/YAMLはこのアプリの設計形式です。画像モデルの公式漫画スキーマではありません。</p>
 <label>ページ設計JSON<textarea id="whole-draft" rows="18" spellcheck="false"></textarea></label><div class="tag-actions"><button type="button" id="tag-picker-whole">辞書からタグを選ぶ</button><span class="hint">カーソルの位置に入れます。"prompt" の文字列の中に置いてから使います</span></div>
 <p class="hint">人物の固定外見は共通設定から引き継ぎます。speakersには台詞と同じ順で話者IDを指定（不明なら空文字）。コマ別の修正を反映する場合は「元コマから作り直す」。</p>
 <p class="hint">コマ別のnegativeは適用しません。背景・構図はpromptに記述し、各コマの説明を短くまとめてください。</p>
@@ -71,14 +73,14 @@
 <p><a id="whole-sent-request" target="_blank" hidden>採用ページに送った要求JSON</a></p><p id="whole-length" class="hint"></p><pre id="whole-preview"></pre>
 </section>
 <h3 class="tab-heading">コマ個別</h3><p class="hint">選択中のコマの場面・プロンプト・人物・台詞・Seed。中央のページ上でコマを選びます。</p>
-<section id="panel-editor" class="editor"><div class="section-heading"><span id="panel-title">コマを編集</span><span id="dirty" class="badge">保存済み</span></div><img id="panel-image" alt="選択コマの画像" hidden><div id="candidate-list"></div><form id="panel-form">
+<section id="panel-editor" class="editor"><div class="section-heading"><span id="panel-title">コマを編集</span><span id="dirty" class="badge">保存済み</span></div><img id="panel-image" alt="選択コマの画像" hidden><button id="adjust-position" type="button" hidden>位置調整</button><div id="candidate-list"></div><form id="panel-form">
 <label>場面メモ <span class="hint">日本語のメモ。送信されません</span><textarea id="scene" rows="2"></textarea></label>
 <div id="setting-fields"><label>背景の固定設定<select id="location-id"></select></label><fieldset class="check-field"><legend>このコマに映る固定小物 <span class="hint">チェックを外すと解除</span></legend><div id="prop-ids" class="check-list"></div></fieldset></div>
-<div id="panel-prompt-ja"></div><label>画像プロンプト（英語・NovelAIへ送信） <span class="hint">背景・構図・光</span><textarea id="prompt" rows="4" lang="en" spellcheck="false"></textarea></label><div class="tag-actions"><button type="button" id="tag-picker">辞書からタグを選ぶ</button><span class="hint">構図・表情・しぐさなどの英語タグの候補を、日本語で探して足せます</span></div>
+<div id="panel-prompt-ja"></div><label>画像プロンプト（英語・画像モデルへ送信） <span class="hint">背景・構図・光</span><textarea id="prompt" rows="4" lang="en" spellcheck="false"></textarea></label><div class="tag-actions"><button type="button" id="tag-picker">辞書からタグを選ぶ</button><span class="hint">構図・表情・しぐさなどの英語タグの候補を、日本語で探して足せます</span></div>
 <details open><summary>人物ごとのプロンプト</summary><div id="characters"></div></details>
-<div id="panel-negative-ja"></div><label>除外する内容（英語・NovelAIへ送信）<textarea id="negative" rows="2" lang="en" spellcheck="false"></textarea></label>
+<div id="panel-negative-ja"></div><label>除外する内容（英語・画像モデルへ送信）<textarea id="negative" rows="2" lang="en" spellcheck="false"></textarea></label>
 <label>台詞（日本語・画像の文字として組版／描画） <span class="hint">1行1枠・最大3枠</span><textarea id="dialogue" rows="3"></textarea></label><div id="speaker-fields"></div>
-<div class="field-row"><label>Seed <span class="hint">空欄でランダム</span><input id="seed" type="number" min="0" max="4294967295"></label><label>クロップ横 <input id="crop-x" type="number" min="0" max="1" step="any"></label><label>クロップ縦 <input id="crop-y" type="number" min="0" max="1" step="any"></label></div>
+<div class="field-row"><label>Seed <span class="hint">空欄でランダム</span><input id="seed" type="number" min="0" max="4294967295"></label><input id="crop-x" type="hidden"><input id="crop-y" type="hidden"></div>
 <div class="actions"><button type="submit" id="save-panel">保存・組版</button><button type="button" id="generate-panel" class="primary">保存して再生成</button></div></form>
 <div class="actions"><select id="add-character-select" aria-label="コマへ追加する人物"></select><button id="add-character">このコマに人物を追加</button><button id="remove-this-panel">このコマを削除</button></div>
 <div class="agent-box"><label for="agent-instruction"><span class="llm-name">Strata</span>にこのコマの修正を依頼</label><textarea id="agent-instruction" rows="2" placeholder="例：二人の距離を近づけて、表情が見える中景にして"></textarea><button id="edit-agent">保存して<span class="llm-name">Strata</span>に依頼</button></div>
@@ -92,9 +94,29 @@
 <dialog id="tag-dialog" class="tag-dialog"><div class="eyebrow">TAG DICTIONARY</div><h2>辞書からタグを選ぶ</h2><p class="hint">NovelAIで使える英語タグの候補です。タグを押すと、選んだ欄に足します。効くかどうかは保証されないので、再生成や試し描きで確かめてください。日本語の確認用の欄は自動では変わりません。</p><div class="field-row"><label>入れる先<select id="tag-target"></select></label><label>分類<select id="tag-group"></select></label></div><label>探す <span class="hint">場面を表す日本語（例：向き合う、天気、肩越し）か英語</span><input id="tag-search" type="search" autocomplete="off"></label><p id="tag-message" class="budget-message" role="status"></p><div id="tag-list" class="tag-list"></div><div class="actions"><button type="button" id="tag-close">閉じる</button></div></dialog>
 <dialog id="budget-dialog"><form id="budget-form" method="dialog"><div class="eyebrow">VERIFICATION BUDGET</div><h2>検証費用の上限</h2><p>このツールが画像生成で使ったAnlasの合計です。合計が上限に達すると、生成を止めます。</p><p id="budget-now" class="budget-now"></p><p id="budget-halt" class="error-text" hidden></p><label>上限（Anlas） <span class="hint">既定は5000</span><input id="budget-limit" type="number" min="1" max="1000000" step="1"></label><div class="actions"><button type="button" id="budget-save">上限を変更</button><button type="button" id="budget-reset" class="danger-outline">合計を0に戻す…</button></div><p id="budget-message" role="status" class="budget-message"></p><p class="hint">0に戻すと、その日時と戻す前の合計が下の履歴に残ります。各生成の記録は消えません。送信結果が不明な生成や、予期しない残量の減少による停止は、0に戻しても解除されません。</p><details><summary>変更の履歴</summary><div id="budget-history"></div></details><div class="actions"><button type="button" id="budget-close">閉じる</button></div></form></dialog>
 <dialog id="delete-dialog"><form id="delete-form"><div class="eyebrow">DELETE PROJECT</div><h2>作品をゴミ箱へ移動</h2><p><strong id="delete-name"></strong> を work/_trash へ移動します。画像・履歴・設定はそのまま残り、完全な削除は行いません。</p><label>確認のため保存用IDを入力<input id="delete-confirm" autocomplete="off" spellcheck="false"></label><div class="actions"><button type="button" id="delete-cancel">やめる</button><button type="submit" id="delete-go" class="danger" disabled>ゴミ箱へ移動</button></div></form></dialog>
-<dialog id="create-dialog"><form id="create-form"><div class="eyebrow">NEW PROJECT</div><h2>小説から、始める。</h2><label>作品名<input id="new-title" required maxlength="120" placeholder="雨の日の約束"></label><label>保存用ID <span class="hint">英数字と - _</span><input id="new-id" required pattern="[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}" placeholder="rain-story"></label><fieldset class="choice-field"><legend>生成方式 <span class="hint">作成時に選びます（通常は変更しません）</span></legend><label class="choice"><input type="radio" name="new-render-mode" value="panels" checked>コマ別生成<span class="hint">コマごとに画像を作り、ページに組版して台詞を後から重ねます。</span></label><label class="choice"><input type="radio" name="new-render-mode" value="whole">ページ一括生成（試験）<span class="hint">NovelAIが1ページを、コマ割りを含む1枚の画像で描きます。</span></label></fieldset><label>原作小説 <span class="hint">全体20万文字、1章3万文字まで</span><textarea id="new-source" required rows="10" maxlength="200000" placeholder="原作を貼り付けてください。長い原作は「## 第一章」のように行頭に章見出しを付けると、4ページずつ使う範囲を選べます。"></textarea></label><p class="hint">原作と設定を保存するだけです。AIは動かず、画像も作りません（字コンテや生成は、作成後に押したときに始まります）。原作の書き方は <a href="/guide/source-tips.html" target="_blank" rel="noopener">渡す小説のコツ</a>、小説がまだなら <a href="/guide/novelai-story.html" target="_blank" rel="noopener">NovelAIで小説を書く</a>。</p><div class="actions"><button type="button" id="close-dialog">閉じる</button><button type="submit" class="primary">作品を作成（まだ生成しません）</button></div></form></dialog>
+<dialog id="create-dialog"><form id="create-form"><div class="eyebrow">NEW PROJECT</div><h2>小説から、始める。</h2><label>作品名<input id="new-title" required maxlength="120" placeholder="雨の日の約束"></label><label>保存用ID <span class="hint">英数字と - _</span><input id="new-id" required pattern="[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}" placeholder="rain-story"></label><label>画像モデル（作成後は変更できません）<select id="new-image-provider"><option value="novelai">NovelAI</option><option value="qwen">QwenImage 2.1 Turbo（ローカル）</option></select></label><fieldset class="choice-field"><legend>生成方式 <span class="hint">作成時に選びます（通常は変更しません）</span></legend><label class="choice"><input type="radio" name="new-render-mode" value="panels" checked>コマ別生成<span class="hint">コマごとに画像を作り、ページに組版して台詞を後から重ねます。</span></label><label class="choice"><input type="radio" name="new-render-mode" value="whole">ページ一括生成（試験）<span class="hint">画像モデルが1ページを、コマ割りを含む1枚の画像で描きます。</span></label></fieldset><label>原作小説 <span class="hint">全体20万文字、1章3万文字まで</span><textarea id="new-source" required rows="10" maxlength="200000" placeholder="原作を貼り付けてください。長い原作は「## 第一章」のように行頭に章見出しを付けると、4ページずつ使う範囲を選べます。"></textarea></label><p class="hint">原作と設定を保存するだけです。AIは動かず、画像も作りません（字コンテや生成は、作成後に押したときに始まります）。原作の書き方は <a href="/guide/source-tips.html" target="_blank" rel="noopener">渡す小説のコツ</a>、小説がまだなら <a href="/guide/novelai-story.html" target="_blank" rel="noopener">NovelAIで小説を書く</a>。</p><div class="actions"><button type="button" id="close-dialog">閉じる</button><button type="submit" class="primary">作品を作成（まだ生成しません）</button></div></form></dialog>
+<dialog id="position-dialog" aria-labelledby="position-title">
+<h2 id="position-title">画像の位置調整</h2><p class="hint">画像をドラッグして移動できます。白い部分はそのまま余白になります。台詞はページの組版時に重なります。</p>
+<div class="position-preview"><canvas id="position-canvas" aria-label="コマ枠内の画像配置プレビュー"></canvas></div>
+<form id="position-form"><div class="position-controls">
+<label>横移動（コマ幅の%）<input id="position-x" type="number" min="-200" max="200" step="0.1" required></label>
+<label>縦移動（コマ高さの%）<input id="position-y" type="number" min="-200" max="200" step="0.1" required></label>
+<label>倍率 <output id="position-scale-label"></output><input id="position-scale" type="range" min="10" max="400" step="1" value="100"></label></div>
+<div class="actions"><button id="position-reset" type="button">中央・枠いっぱい</button><button id="position-contain" type="button">画像全体を収める</button></div>
+<p id="position-error" class="error-text" role="alert"></p><div class="actions"><button id="position-cancel" type="button">キャンセル</button><button id="position-save" type="submit" class="primary">保存してPNG組版</button></div></form></dialog>
+<dialog id="library-dialog" aria-labelledby="library-title">
+<div class="section-heading"><h2 id="library-title">作品の管理</h2><button id="library-close" type="button">閉じる</button></div>
+<p class="hint">一覧への表示を管理します。除外しても作品フォルダや画像は残ります。</p>
+<form id="library-import-form"><label>読み込む作品フォルダ<input id="library-path" type="text" placeholder="project.jsonがあるフォルダのパス" required></label>
+<p class="hint">このPCのフォルダを選ぶか、パスを貼り付けてください。別の場所の作品は画像・履歴とともにworkへコピーします。同じIDには上書きしません。元フォルダは残ります。</p>
+<div class="actions"><button id="library-choose" type="button">フォルダを選ぶ</button><button id="library-import" type="submit">フォルダを読み込む</button><button id="library-refresh" type="button">一覧を再読込み</button></div></form>
+<p id="library-message" role="status"></p><div id="library-items"></div>
+<section id="library-exclude" hidden><h3 id="library-exclude-title"></h3><p>作品フォルダは削除・移動しません。この「管理」画面の「除外中」から「一覧に戻す」を押すと再読込みできます。フォルダを別の場所に移した場合は、上の「フォルダを読み込む」で読み込み直してください。フォルダを削除した場合は、バックアップからの復元が必要です。</p>
+<label class="choice"><input id="library-confirm" type="checkbox">再読込みの方法を確認しました</label>
+<div class="actions"><button id="library-exclude-cancel" type="button">取り消す</button><button id="library-exclude-go" type="button" disabled>一覧から除外</button></div></section></dialog>
 <script src="/js/core.js"></script>
 <script src="/js/provider.js"></script>
+<script src="/js/image-provider.js"></script>
 <script src="/js/jobs.js"></script>
 <script src="/js/fields.js"></script>
 <script src="/js/shell.js"></script>
@@ -110,4 +132,6 @@
 <script src="/js/plan.js"></script>
 <script src="/js/production.js"></script>
 <script src="/js/manage.js"></script>
+<script src="/js/position.js"></script>
+<script src="/js/library-manager.js"></script>
 <script src="/js/main.js"></script></body></html>

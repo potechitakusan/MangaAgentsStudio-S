@@ -1,6 +1,6 @@
 # MangaAgentsStudio-S release files
-# built 2026-10-17T16:56:07+09:00 from SVN BASE (newest committed revision r249)
-# 170 files
+# built 2026-10-20T22:14:12+09:00 from SVN BASE (newest committed revision r258)
+# 187 files
 .env.example
 examples/lost-camera-12.txt
 examples/novelai-visual-novel-system.txt
@@ -20,14 +20,19 @@ studio/backup.py
 studio/cli.py
 studio/compose.py
 studio/exporting.py
+studio/images.py
 studio/jobs.py
 studio/layouts.py
+studio/library.py
 studio/llm.py
+studio/local_ai.py
 studio/novelai.py
 studio/pageplan.py
 studio/production.py
 studio/profiles.py
 studio/project.py
+studio/qwen.py
+studio/references.py
 studio/rendering.py
 studio/server.py
 studio/strata_tasks.py
@@ -123,18 +128,24 @@ templates/system.example.json
 tests/browser_continuation.py
 tests/browser_layout.py
 tests/browser_profiles.py
+tests/browser_qwen.py
 tests/browser_smoke.py
+tests/browser_ui_improvements.py
 tests/browser_wholepage.py
 tests/browser_workspace.py
 tests/test_agent_tidy.py
 tests/test_backup.py
 tests/test_llm.py
+tests/test_local_ai.py
 tests/test_pageplan.py
 tests/test_profiles.py
+tests/test_qwen.py
+tests/test_references.py
 tests/test_routes.py
 tests/test_studio.py
 tests/test_suggest_tags.py
 tests/test_system_layers.py
+tests/test_ui_improvements.py
 tests/test_workspace.py
 tests/ui_style_snapshot.py
 web/css/base.css
@@ -150,19 +161,25 @@ web/guide/guide.css
 web/guide/guide.js
 web/guide/index.html
 web/guide/novelai-story.html
+web/guide/qwen-image.html
+web/guide/reference.html
+web/guide/setup.html
 web/guide/source-tips.html
 web/guide/tips.html
 web/index.html
 web/js/budget.js
 web/js/core.js
 web/js/fields.js
+web/js/image-provider.js
 web/js/jobs.js
+web/js/library-manager.js
 web/js/library.js
 web/js/main.js
 web/js/manage.js
 web/js/page-editor.js
 web/js/panel-editor.js
 web/js/plan.js
+web/js/position.js
 web/js/preview.js
 web/js/production.js
 web/js/provider.js

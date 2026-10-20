@@ -1,4 +1,9 @@
 /* Settings cards: system prompts, catalog, batch, production, export, management. */
+#new-image-provider {
+  display:block;
+  width:100%;
+  margin-top:6px;
+}
 .range-controls {
   display:flex;
   align-items:center;
@@ -253,3 +258,4 @@
 .plan-page[open] summary {
   white-space:normal;
 }
+.reference-item{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--line);padding:10px 0}.reference-item strong,.reference-item p{width:100%}.reference-item img{width:96px;height:112px;object-fit:contain}#work-image-settings select{width:100%;max-width:100%;min-width:0}

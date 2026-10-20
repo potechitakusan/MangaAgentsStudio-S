@@ -10,7 +10,7 @@ import urllib.error
 from pathlib import Path
 from unittest.mock import patch
 from PIL import Image
-from studio import project as db, novelai, agent, wholepage
+from studio import project as db, novelai, agent, wholepage, images, qwen
 from studio.compose import compose, crop_box
 from studio.server import Handler, ThreadingHTTPServer, TOKEN
 
@@ -20,7 +20,7 @@ class StudioTests(unittest.TestCase):
     def setUp(self):
         self.root = REAL_ROOT / '.runtime' / ('test-' + uuid.uuid4().hex)
         self.root.mkdir(parents=True)
-        self.patches = [patch.object(db, 'WORK', self.root / 'work'), patch.object(novelai, 'ledger_path', lambda: self.root / 'ledger.json')]
+        self.patches = [patch.object(db, 'WORK', self.root / 'work'), patch.object(novelai, 'ledger_path', lambda: self.root / 'ledger.json'), patch.object(qwen, 'ledger_path', lambda: self.root / 'qwen-ledger.json'), patch.object(images,'defaults',return_value=dict(images.DEFAULTS))]
         for p in self.patches: p.start()
         self.board = db.read_json(REAL_ROOT / 'templates/board.example.json')
         db.create('test', 'テスト', '澪が傘を開いた')

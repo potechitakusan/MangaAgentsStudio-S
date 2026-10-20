@@ -19,11 +19,11 @@ def page_at(project, number):
 
 def from_panels(project, number):
     page = page_at(project, number)
-    panels = [{k:copy.deepcopy(c[k]) for k in db.PANEL_FIELDS if k in c and k not in ('id','seed','crop')} for c in page['panels']]
+    panels = [{k:copy.deepcopy(c[k]) for k in db.PANEL_FIELDS if k in c and k not in ('id','seed','crop','image_transform')} for c in page['panels']]
     for panel in panels:
         characters = panel.get('characters', [])
         panel.setdefault('speakers', [characters[0]['id'] if len(characters)==1 else '' for _ in panel.get('dialogue', [])])
-    return dict(template=page['template'], panels=panels)
+    return dict(output_method=project['output_method'], template=page['template'], panels=panels)
 
 def settings(project, number):
     page = page_at(project, number)
@@ -38,11 +38,13 @@ def validate(project, number, value):
     seed = value.get('seed')
     if seed is not None and (type(seed) is not int or not 0 <= seed <= 4294967295): raise db.StudioError('Seedは空欄または0〜4294967295です')
     draft = value.get('draft')
-    if not isinstance(draft, dict) or set(draft) != {'template','panels'}: raise db.StudioError('設計JSONはtemplateとpanelsを含めてください')
+    from . import images
+    images.require_match(project,draft)
+    if set(draft) != {'output_method','template','panels'}: raise db.StudioError('設計JSONはoutput_method/template/panelsを含めてください')
     if not isinstance(draft['panels'], list) or len(draft['panels']) > 7: raise db.StudioError('ページ一括は1〜7コマです')
     clean = copy.deepcopy(draft)
     for i, panel in enumerate(clean['panels'], 1):
-        if not isinstance(panel, dict) or set(panel) - ((set(db.PANEL_FIELDS) - {'id','seed','crop'}) | {'speakers'}):
+        if not isinstance(panel, dict) or set(panel) - ((set(db.PANEL_FIELDS) - {'id','seed','crop','image_transform'}) | {'speakers'}):
             raise db.StudioError('設計のコマには場面・プロンプト・人物・台詞・場所・小物だけを指定してください')
         panel['id'] = f'wp{number}-{i}'
     check = {**project, 'pages':[clean]}

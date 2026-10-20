@@ -73,7 +73,7 @@ class WorkspaceTests(unittest.TestCase):
         p=workspace.save('test',p['revision'],v); exported=workspace.config_export('test','all')
         db.create('imported','取込','仮の原作');p2=workspace.config_import('imported',0,exported)
         self.assertEqual(workspace.editable(p2),workspace.editable(p))
-        self.assertEqual(set(workspace.config_export('test','system')),{'schema','system'})
+        self.assertEqual(set(workspace.config_export('test','system')),{'schema','system','output_method'})
         bad=copy.deepcopy(exported);bad['inputs']['pages'][0]['panels'][0]['image']='../../.env'
         with self.assertRaises(db.StudioError): workspace.config_import('imported',p2['revision'],bad)
 

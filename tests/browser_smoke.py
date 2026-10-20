@@ -21,14 +21,18 @@ with sync_playwright() as p:
     expect(page.locator('#page-image')).to_be_visible()
     page.locator('#page-hotspots button').nth(1).click()
     expect(page.locator('#panel-title')).to_have_text('コマ p1-2')
-    # Move crop upward to retain the man's head; no image API call.
-    page.locator('#crop-y').fill('0')
-    page.get_by_role('button',name='保存・組版',exact=True).click()
-    expect(page.locator('#status')).to_have_text('ページを組み直しました',timeout=30000)
+    # Move the art in the placement dialog; no image API call.
+    page.locator('#adjust-position').click()
+    expect(page.locator('#position-y')).to_be_enabled()
+    page.locator('#position-y').fill('10')
+    page.locator('#position-save').click()
+    expect(page.locator('#status')).to_contain_text('PNGで組版しました',timeout=30000)
     page.reload(wait_until='networkidle')
     page.get_by_role('button', name='雨の日の青い傘', exact=False).click()
     page.locator('#page-hotspots button').nth(1).click()
-    expect(page.locator('#crop-y')).to_have_value('0')
+    page.locator('#adjust-position').click()
+    expect(page.locator('#position-y')).to_have_value('10.0')
+    page.locator('#position-cancel').click()
     page.locator('#page-hotspots button').nth(2).click()
     if args.live:
         page.locator('#agent-instruction').fill('二人が1本の傘を共有する絵になったので、澪は青い傘を右手で持ち、蓮は別の灰色の折り畳み傘を左手で持つ絵にしてください。二人の間に空間を空け、2本の開いた傘がはっきり見える引きの全身像にする。人数は1girl, 1boy、傘は2 umbrellasを明記。negativeにはshared umbrellaを追加。原作の台詞と人物の固定外見は維持。')

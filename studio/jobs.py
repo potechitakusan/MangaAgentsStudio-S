@@ -6,7 +6,7 @@ import sys
 import threading
 import time
 from . import project as db
-from . import novelai, strata_tasks, production, exporting, llm, pageplan
+from . import novelai, strata_tasks, production, exporting, llm, pageplan, images
 from .compose import compose
 
 JOBS = {}
@@ -16,7 +16,7 @@ def save_job(job):
     db.dump(db.ROOT / '.runtime' / 'jobs' / (job['id'] + '.json'), job)
 
 def job_run(job, data):
-    with llm.using(data.get('llm_provider','strata')):
+    with llm.using(data.get('llm_provider','strata')), images.using(data.get('image_settings')):
         _job_run(job, data)
 
 def run_agent_process(job, pid, data, suffix=''):
@@ -25,7 +25,7 @@ def run_agent_process(job, pid, data, suffix=''):
     env.update(PYTHONPATH=str(db.ROOT), PYTHONIOENCODING='utf-8')
     env.pop('NOVELAI_API_KEY', None)
     command = [sys.executable, '-X', 'utf8', '-m', 'studio.cli', 'agent', pid,
-               '--instruction', data.get('instruction') or '原作を漫画の字コンテとNovelAIプロンプトにして保存してください。',
+               '--instruction', data.get('instruction') or f'原作を漫画の字コンテと{images.label()}プロンプトにして保存してください。',
                '--pages', str(data.get('pages', 1)), '--provider', llm.current()]
     if data.get('panel_id'): command.extend(['--panel', data['panel_id']])
     if data.get('append'): command.append('--append')
@@ -93,21 +93,21 @@ def _job_run(job, data):
             targets = db.generation_targets(p, data.get('panel_id'), data.get('start_page'), data.get('end_page'))
             for i, panel in enumerate(targets):
                 if i: time.sleep(3)
-                job['message'] = f'NovelAI生成 {i + 1}/{len(targets)}: {panel}'
+                job['message'] = f'{images.label()}生成 {i + 1}/{len(targets)}: {panel}'
                 save_job(job)
-                record = novelai.generate(pid, panel, job['id'] + f'-{i}', data['revision'] if i == 0 else None)
+                record = images.generate(pid, panel, job['id'] + f'-{i}', data['revision'] if i == 0 else None)
                 if record['status'] != 'complete': raise db.StudioError('生成結果が未確定です。履歴を確認してください')
                 compose(pid)
             job['message'] = f'{len(targets)}コマの生成と組版が完了しました'
         elif kind == 'preview':
-            job['result']=novelai.generate(pid,None,job['id'],data['revision'],preview=data['preview'])
+            job['result']=images.generate(pid,None,job['id'],data['revision'],preview=data['preview'])
             if job['result']['status']!='complete': raise db.StudioError('試し描きの結果が未確定です。台帳を確認してください')
             job['message']='試し描きを保存しました（漫画の採用画像は変更しません）'
         elif kind == 'wardrobe':
             strata_tasks.wardrobe(pid,data['revision'],data['character_id'],data.get('instruction',''))
             job['message']='固定外見と衣装を保存しました。内容と既存コマの衣装指定を確認してください'
         elif kind == 'generate-page':
-            record = novelai.generate(pid, None, job['id'], data['revision'], page_number=data['page_number'])
+            record = images.generate(pid, None, job['id'], data['revision'], page_number=data['page_number'])
             if record['status'] != 'complete': raise db.StudioError('ページ生成結果が未確定です。台帳を確認してください')
             compose(pid)
             job['message'] = '1ページの一括生成が完了しました'
@@ -149,11 +149,11 @@ def start_job(data):
     kind = data.get('kind')
     if kind not in ('agent','page-plan','agent-auto','generate','generate-page','compose','translate','review','rewrite','voices','produce','export','preview','wardrobe'): raise db.StudioError('処理種別が不正です')
     provider=llm.validate_provider(data.get('llm_provider','strata'))
-    db.load(data['project_id'])
+    data={**data,'image_settings':images.for_project(db.load(data['project_id']))}
     with JOB_LOCK:
         if job_id in JOBS: return JOBS[job_id]
         if any(j['status'] == 'running' for j in JOBS.values()): raise db.StudioError('別の処理が実行中です')
-        job = dict(id=job_id, kind=kind, project_id=data['project_id'], llm_provider=provider, status='running', message='処理を開始しています', started_at=db.now())
+        job = dict(id=job_id, kind=kind, project_id=data['project_id'], llm_provider=provider, image_settings=data['image_settings'], status='running', message='処理を開始しています', started_at=db.now())
         JOBS[job_id] = job
         save_job(job)
         threading.Thread(target=job_run, args=(job, data), daemon=True).start()

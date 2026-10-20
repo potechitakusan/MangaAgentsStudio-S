@@ -43,6 +43,8 @@ def unwrap_result(value, schema):
     return value
 
 def structured(project_id, purpose, system, content, schema, validator, transport=None):
+    from . import images
+    system += '\n' + images.prompt_rule(db.load(project_id))
     transport=transport or agent.chat
     definition=agent.tool('submit_result','結果を一度保存して終了する。引数に項目を直接渡す')
     definition['function']['parameters']=schema

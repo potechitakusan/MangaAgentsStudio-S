@@ -3,14 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import time
-import urllib.error
-import urllib.request
 import uuid
 from collections import Counter
-from . import project as db, profiles, llm, pageplan
-
-ENDPOINT = 'http://127.0.0.1:8080/v1/chat/completions'
-MODEL = 'qwen3.8-flash-next-iq2_xs'
+from . import project as db, profiles, llm, pageplan, local_ai
 
 def tool(name, description, properties=None, required=None):
     return {'type': 'function', 'function': {'name': name, 'description': description,
@@ -116,16 +111,7 @@ def bilingual_board(board, project=None, allow_untranslated_panels=False):
 def chat(messages, tools, timeout):
     if llm.current() == 'grok':
         return llm.grok_chat(messages, tools, timeout)
-    payload = dict(model=MODEL, messages=messages, tools=tools, tool_choice='auto',
-                   temperature=.2, max_tokens=8192, stream=False, reasoning_effort='none')
-    request = urllib.request.Request(ENDPOINT, json.dumps(payload).encode(), {'Content-Type': 'application/json'})
-    try:
-        # Local inference never needs proxy environment variables.
-        with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(request, timeout=timeout) as r:
-            data = json.load(r)
-        return data['choices'][0]['message'], data.get('usage', {})
-    except (urllib.error.URLError, TimeoutError, KeyError, ValueError):
-        raise db.StudioError('Strataの応答を取得できません。起動状態とログを確認してください') from None
+    return local_ai.chat(messages, tools, timeout)
 
 def user_request(instruction, page_count, title, panel_id=None):
     """The host states the fixed part of the job so a blank or short UI instruction still works."""
@@ -165,6 +151,7 @@ def run(project_id, instruction, page_count=1, panel_id=None, progress=None, tra
                panel_id=panel_id, instruction=instruction, source_section=source_section, source_title=selected_source['title'],
                page_start=len(initial['pages'])+1 if not panel_id else None, page_plan=bool(plan_rows), events=[])
     schema = db.read_json(db.ROOT / 'templates' / 'board.example.json')
+    schema.pop('output_method', None)  # The host owns this immutable attribute.
     system = (folder / 'AGENTS.md').read_text(encoding='utf-8') + '\n' + (folder / 'SKILL.md').read_text(encoding='utf-8')
     if not panel_id:
         system += '\nJSON形式の参考例（内容は模倣せず原作を使う）:\n' + json.dumps(schema, ensure_ascii=False)
@@ -178,6 +165,8 @@ def run(project_id, instruction, page_count=1, panel_id=None, progress=None, tra
     system += '\n新規人物のappearanceは年齢・顔・髪・体格等で、衣装や場面の表情を入れない。原作に必要な衣装だけoutfitsへ1〜10件（id/name/prompt/prompt_ja）作りdefault_outfit_idを指定。コマ人物はoutfit_idで服を1種類選択しexpressionで表情を選ぶ。表情指定がcustom以外ならpromptには動作と向きだけを書き、服・表情を重複させない。既存人物に衣装がない場合outfit_idは空文字で固定外見を保つ。'
     system += '\n共通の絵柄styleはユーザー設定を優先し、最初のページでも変えない。'
     system += '\n' + EXPRESSION_RULE
+    from . import images
+    system += '\n' + images.prompt_rule(initial)
     if panel_id:
         system += f'\n今回は既存コマ {panel_id} だけ修正する。原作にない人物や結末は作らない。'
         system += '\nupdate_panelのpatchには変更項目だけ入れる。idやpanel_idは絶対に入れない（対象IDはホストが固定済み）。例: {"patch":{"dialogue":["明日ね"]}}'

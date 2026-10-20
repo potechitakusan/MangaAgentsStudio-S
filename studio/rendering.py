@@ -1,12 +1,21 @@
 """Backend page layers shared by preview, PNG and PSD exports."""
 from __future__ import annotations
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageOps, ImageChops
 from . import project as db, layouts
 from .compose import WIDTH, HEIGHT, MARGIN, font, wrap, crop_box, rectangle
 
 def geometry(page):
     return [[(MARGIN+round(x*(WIDTH-2*MARGIN)),MARGIN+round(y*(HEIGHT-2*MARGIN))) for x,y in poly]
             for poly in layouts.polygons(page['template'],db.TEMPLATES[page['template']])]
+
+def image_rect(image_size, target_size, crop, transform):
+    """Cover scale, crop anchor, then translation as a fraction of the panel size."""
+    iw, ih = image_size
+    w, h = target_size
+    scale = max(w / iw, h / ih) * transform['scale']
+    dw, dh = iw * scale, ih * scale
+    return [(w - dw) * crop[0] + w * transform['x'],
+            (h - dh) * crop[1] + h * transform['y'], dw, dh]
 
 def text_layers(panel, rect):
     x,y,w,h=rect; lines=panel.get('dialogue',[]); result=[]
@@ -60,14 +69,22 @@ def page_layers(project,number,include_text=True,require_images=False):
         entry=dict(id=panel['id'],rect=[x,y,w,h],polygon=polygon,image=panel.get('image'),location_id=panel.get('location_id'),prop_ids=panel.get('prop_ids',[]),text_layers=[])
         if panel.get('image'):
             with Image.open(db.asset_path(project['id'],panel['image'])) as im:
-                box=crop_box(im.size,(w,h),panel.get('crop',[.5,.5]))
-                art=im.convert('RGB').resize((w,h),Image.Resampling.LANCZOS,box=box).convert('RGBA')
-                entry.update(source_size=list(im.size),source_crop=box)
+                crop=panel.get('crop',[.5,.5])
+                if 'image_transform' in panel:
+                    left,top,dw,dh=image_rect(im.size,(w,h),crop,panel['image_transform'])
+                    scale=dw/im.width
+                    art=im.convert('RGBA').transform((w,h),Image.Transform.AFFINE,
+                        (1/scale,0,-left/scale,0,1/scale,-top/scale),Image.Resampling.BICUBIC)
+                    entry.update(source_size=list(im.size),image_rect=[left,top,dw,dh],image_transform=panel['image_transform'])
+                else:
+                    box=crop_box(im.size,(w,h),crop)
+                    art=im.convert('RGB').resize((w,h),Image.Resampling.LANCZOS,box=box).convert('RGBA')
+                    entry.update(source_size=list(im.size),source_crop=box)
         else:
             if require_images: raise db.StudioError(f'{panel["id"]}の画像が未生成です')
             art=Image.new('RGBA',(w,h),'#e9edf2'); draw=ImageDraw.Draw(art)
             draw.multiline_text((20,20),'\n'.join(wrap(draw,panel['id']+'\n'+panel['scene'],font(26),max(30,w-40))),font=font(26),fill='#536174',spacing=8)
-        art.putalpha(mask); layers.append((panel['id']+' コマ画像',art,(x,y)))
+        art.putalpha(ImageChops.multiply(art.getchannel('A'),mask)); layers.append((panel['id']+' コマ画像',art,(x,y)))
         if include_text:
             # Keep text inset from slanted edges; ordinary rectangles preserve legacy placement.
             rect=[x,y,w,h]
@@ -84,15 +101,24 @@ def flatten(layers):
     for _,image,offset in layers: canvas.alpha_composite(image,offset)
     return canvas.convert('RGB')
 
-def compose(project_id):
+def compose(project_id, page_number=None):
     with db.LOCK,db.exclusive(db.directory(project_id)/'.compose.lock'):
         project=db.load(project_id)
         if not project['pages']: raise db.StudioError('先に字コンテを作成してください')
         db.validate_board(project,allow_incomplete=project.get('workspace_version')==2)
+        if page_number is not None and (type(page_number) is not int or not 1 <= page_number <= len(project['pages'])):
+            raise db.StudioError('ページ番号が不正です')
         out=db.directory(project_id)/'output'; out.mkdir(exist_ok=True)
+        prior=db.read_json(out/'manifest.json') if page_number is not None and (out/'manifest.json').exists() else {}
         manifest=dict(project_id=project_id,revision=project['revision'],reading_order='right-to-left',canvas=[WIDTH,HEIGHT],generated_at=db.now(),pages=[])
         for number in range(1,len(project['pages'])+1):
+            old=next((r for r in prior.get('pages',[]) if r.get('page')==number),None)
+            expected=f'output/{"whole-" if project.get("render_mode")=="whole" else ""}page-{number:03}.png'
+            if page_number is not None and number!=page_number and old and old.get('file')==expected and (db.directory(project_id)/expected).is_file():
+                manifest['pages'].append(old)
+                continue
             layers,record=page_layers(project,number)
+            record['revision']=project['revision']
             target=db.directory(project_id)/record['file']; flatten(layers).save(target.with_suffix('.tmp'),format='PNG'); target.with_suffix('.tmp').replace(target)
             manifest['pages'].append(record)
         columns=min(3,len(project['pages'])); overview=Image.new('RGB',(columns*320,((len(project['pages'])+columns-1)//columns)*480),'#e9edf2')

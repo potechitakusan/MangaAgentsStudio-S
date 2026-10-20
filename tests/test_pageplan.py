@@ -95,7 +95,7 @@ class PagePlanTests(unittest.TestCase):
         self.assertEqual(pageplan.rows_for(p, 3, 2), [])                              # the plan does not cover page 4
 
     def test_fill_ja_fills_empty_fields_only(self):
-        board = dict(title='t', style='s', characters=[dict(id='mio', name='澪', appearance='girl')], locations=[], props=[],
+        board = dict(output_method='novelai', title='t', style='s', characters=[dict(id='mio', name='澪', appearance='girl')], locations=[], props=[],
                      pages=[dict(template='two', panels=[dict(id='p1-1', scene='a', prompt='rain', characters=[dict(id='mio', prompt='smiling', x=.5, y=.5)], dialogue=[]),
                                                           dict(id='p1-2', scene='b', prompt='sun', prompt_ja='晴れ（手入力）', negative='text', characters=[], dialogue=[])])])
         db.import_board('w', db.load('w')['revision'], board)

@@ -13,6 +13,7 @@ def main():
     sub = parser.add_subparsers(dest='command', required=True)
     init = sub.add_parser('create')
     init.add_argument('id'); init.add_argument('--source', required=True); init.add_argument('--title', default='新しい漫画')
+    init.add_argument('--image-provider', choices=('novelai','qwen'), required=True)
     a = sub.add_parser('agent')
     a.add_argument('id'); a.add_argument('--instruction', default='原作を漫画にしてください。字コンテとNovelAIプロンプトを作成して保存してください。')
     a.add_argument('--pages', type=int, default=1); a.add_argument('--panel')
@@ -27,11 +28,12 @@ def main():
     pm = sub.add_parser('mode'); pm.add_argument('id'); pm.add_argument('mode',choices=('panels','whole'))
     pp = sub.add_parser('page-plan'); pp.add_argument('id'); pp.add_argument('--page',type=int,required=True)
     sub.add_parser('status'); sub.add_parser('ledger')
+    sub.add_parser('check-local-ai', help='制作AIの接続とモデル名を確認（生成なし）')
     sub.add_parser('serve').add_argument('--port', type=int, default=8765)
     args = parser.parse_args()
     try:
         if args.command == 'create':
-            result = db.create(args.id, args.title, Path(args.source).read_text(encoding='utf-8-sig'))
+            result = db.create(args.id, args.title, Path(args.source).read_text(encoding='utf-8-sig'), args.image_provider)
         elif args.command == 'agent':
             from .agent import run
             from . import llm
@@ -46,7 +48,7 @@ def main():
         elif args.command == 'import':
             result = db.import_board(args.id, db.load(args.id)['revision'], db.read_json(args.file))
         elif args.command == 'generate':
-            from .novelai import generate
+            from .images import generate
             from .compose import compose
             p = db.load(args.id)
             if not args.panel and not args.missing: raise db.StudioError('--panelまたは--missingを指定してください')
@@ -69,7 +71,7 @@ def main():
                 result = wholepage.set_mode(args.id,p['revision'],args.mode)
                 compose(args.id)
             else:
-                from .novelai import generate
+                from .images import generate
                 config = wholepage.settings(p,args.page)
                 if args.format: config['format'] = args.format
                 if args.seed is not None: config['seed'] = args.seed
@@ -78,6 +80,9 @@ def main():
                 p = wholepage.set_mode(args.id,p['revision'],'whole')
                 result = generate(args.id,None,args.request_id or uuid.uuid4().hex,p['revision'],page_number=args.page)
                 compose(args.id)
+        elif args.command == 'check-local-ai':
+            from . import local_ai
+            result = local_ai.check()
         elif args.command in ('status', 'ledger'):
             from . import novelai
             result = getattr(novelai, args.command)()

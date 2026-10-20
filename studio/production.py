@@ -1,6 +1,6 @@
 """Finite, reviewed production batches. Never retries an image request."""
 import time
-from . import project as db, workspace, strata_tasks, novelai
+from . import project as db, workspace, strata_tasks, novelai, images
 from .compose import compose
 
 def produce(project_id, revision, request_id, scope='all', page_number=None, panel_id=None,
@@ -32,21 +32,21 @@ def produce(project_id, revision, request_id, scope='all', page_number=None, pan
     targets=[]
     for number in selected:
         if p.get('render_mode')=='whole':
-            if regenerate or novelai.is_stale(p,page_number=number): targets.append((None,number))
+            if regenerate or images.is_stale(p,page_number=number): targets.append((None,number))
         else:
             for panel in p['pages'][number-1]['panels']:
                 if scope=='panel' and panel['id']!=panel_id: continue
-                if regenerate or novelai.is_stale(p,panel=panel): targets.append((panel['id'],None))
+                if regenerate or images.is_stale(p,panel=panel): targets.append((panel['id'],None))
     results=[]
     for i,(pid,number) in enumerate(targets):
         if cancelled and cancelled(): raise db.StudioError('生成を停止しました。完了した画像は保存済みです')
         current=db.load(project_id)
         if workspace.fingerprint(current,pages)!=digest: raise db.StudioError('生成中に入力が変更されたため、残りの生成を停止しました')
-        if progress: progress(f'NovelAI {i+1}/{len(targets)} · '+(f'{number}ページ' if number else pid))
-        record=novelai.generate(project_id,pid,request_id+f'-{i}',current['revision'],page_number=number)
+        if progress: progress(f'{images.label()} {i+1}/{len(targets)} · '+(f'{number}ページ' if number else pid))
+        record=images.generate(project_id,pid,request_id+f'-{i}',current['revision'],page_number=number)
         if record['status']!='complete': raise db.StudioError('生成が未確定のため停止しました')
         results.append(record['id'])
         compose(project_id)
-        if i+1<len(targets): time.sleep(3)
+        if i+1<len(targets) and images.current()['provider']=='novelai': time.sleep(3)
     compose(project_id)  # Dialogue-only edits need composition even when all artwork is reusable.
     return dict(stage='complete',generated=len(results),request_ids=results,review_id=report['id'],warnings_ignored=bool(report['warnings'] and ignore_warnings))

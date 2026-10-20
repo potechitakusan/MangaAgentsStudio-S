@@ -100,3 +100,23 @@ dialog h2 {
   opacity:.75;
   font-size:11px;
 }
+#position-dialog, #library-dialog { width:min(850px, 94vw); }
+.position-editable { cursor:move; }
+#adjust-position { margin:6px 0 12px; }
+.position-preview { display:flex; justify-content:center; background:#e5e8e3; padding:10px; border-radius:6px; }
+#position-canvas { display:block; max-width:100%; height:auto; touch-action:none; cursor:grab; }
+#position-canvas:active { cursor:grabbing; }
+.position-controls { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.position-controls label:last-child { grid-column:1 / -1; }
+.position-controls input { width:100%; }
+.library-manager-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid var(--line); }
+.library-manager-row > div { min-width:0; overflow-wrap:anywhere; }
+.library-manager-row small { display:block; color:var(--muted); margin-top:5px; }
+.library-manager-row button { flex:none; }
+#library-items { max-height:38vh; overflow:auto; }
+#library-exclude { padding:14px; margin-top:16px; border:1px solid #c9ab7b; border-radius:8px; background:#fffaf0; }
+#library-exclude p { font-size:13px; line-height:1.8; }
+@media(max-width:600px) {
+  #position-dialog, #library-dialog { padding:16px; }
+  .position-controls { grid-template-columns:1fr; gap:0; }
+}

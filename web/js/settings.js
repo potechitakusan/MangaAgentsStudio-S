@@ -34,7 +34,7 @@ function renderSettings(){
   $('regenerate-existing').checked=Boolean(ui['regenerate-existing']);
   $('ignore-warnings-auto').checked=Boolean(ui['ignore-warnings-auto']);
   $('source-preview').textContent=sections[Number($('source-section').value)]?.text||'';
-  renderTrial();
+  renderTrial(); renderImageSettings();
 }
 function collectInputs(){
   if(!inputs)throw new Error('作品を選んでください');const value=structuredClone(inputs);
@@ -44,8 +44,9 @@ function collectInputs(){
     const p=value.pages[pageIndex];const index=project.pages[pageIndex].panels.findIndex(c=>c.id===selected);
     if(index>=0&&panelChanged)p.panels[index]={...p.panels[index],...patch()};
     p.whole={...p.whole,format:$('whole-format').value||p.whole.format,seed:$('whole-seed').value===''?null:Number($('whole-seed').value),linked:panelChanged?true:p.whole.linked};
-    if(wholeChanged){const draft=JSON.parse($('whole-draft').value);p.template=draft.template;p.panels=draft.panels.map((c,i)=>({...c,id:p.panels[i]?.id||'c-'+crypto.randomUUID().slice(0,12)}));p.whole.linked=true;}
+    if(wholeChanged){const draft=JSON.parse($('whole-draft').value);if(draft.output_method!==project.output_method)throw new Error('設計JSONのoutput_methodが作品と違うか、ありません');p.template=draft.template;p.panels=draft.panels.map((c,i)=>({...c,id:p.panels[i]?.id||'c-'+crypto.randomUUID().slice(0,12)}));p.whole.linked=true;}
   }
+  value.image_settings={reference_mode:$('reference-mode').value,anime_finish:$('anime-finish').checked,denoise:Number($('anime-denoise').value)};
   collectPlan(value);
   value.ui_inputs={...value.ui_inputs};for(const id of UI_SAVED)value.ui_inputs[id]=$(id).value;
   value.ui_inputs['regenerate-existing']=$('regenerate-existing').checked;

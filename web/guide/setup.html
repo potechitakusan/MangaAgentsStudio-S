@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>制作AIの準備・詳細設定</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<header class="top"><nav class="top-inner" aria-label="ガイド"><a class="brand" href="index.html">MangaAgentsStudio ガイド</a><a href="index.html">基本の使い方</a><a href="setup.html" aria-current="page">制作AIの準備</a><a href="reference.html">仕様の補足</a><a href="qwen-image.html">QwenImageで生成</a></nav></header>
+<main>
+<h1>制作AIの準備・詳細設定</h1>
+<p class="lead">制作AIはStrataまたはGrokを選びます。アプリの起動、制作AIの準備、画像生成先の準備は別々です。</p>
+<ul class="toc"><li><a href="#strata">Strataの準備</a></li><li><a href="#local-settings">接続先・モデル名の設定</a></li><li><a href="#strata-example">Strataの動作確認環境</a></li><li><a href="#grok">Grok CLIの準備</a></li><li><a href="#connection">接続確認の範囲</a></li><li><a href="#timing">所要時間の参考値</a></li></ul>
+
+<h2 id="strata">Strataの準備</h2>
+<p>Strataは別途構築するローカルの制作AIです。Grokだけを使う場合は不要です。導入には<a href="https://github.com/Niko1221/Strata">公式Strataの手順</a>を使います。アプリの <code>start-studio.cmd</code> と <code>Start-Studio.ps1</code> はStrataを起動しません。</p>
+<div class="table-wrap"><table>
+<tr><th>項目</th><th>アプリの接続条件</th></tr>
+<tr><td>接続先</td><td>既定は <code>http://127.0.0.1:8080/v1/chat/completions</code>。<code>LOCAL_AI_URL</code> で変更可能。OpenAI互換のツール呼出し（function calling）が必要。</td></tr>
+<tr><td>モデル名</td><td>既定は <code>qwen3.8-flash-next-iq2_xs</code>。<code>LOCAL_AI_MODEL</code> で変更可能。下記構成での利用記録であり、他のモデルの互換性を保証しない。</td></tr>
+<tr><td>生成パラメータ</td><td><code>temperature: 0.2</code>、<code>max_tokens: 8192</code>、<code>stream: false</code>、<code>reasoning_effort: none</code>（Thinkingオフ）。</td></tr>
+<tr><td>応答時間</td><td>1応答は最大180秒。字コンテ作成・コマ修正のツール往復は8ターン・10分まで。ページ割り・翻訳・点検等は別の短い処理で、形式修正を含め最大2応答。それぞれ180秒まで。</td></tr>
+<tr><td>入力とコンテキスト</td><td>コンテキスト128K以上を推奨。アプリが要求する固定の最低値ではなく、最大入力時の成功保証でもない。文字数による別の<a href="reference.html#limits">入力制限</a>がある。</td></tr>
+</table></div>
+<p>構築済みのStrataフォルダで実行する起動例です。<code>strata-iq2_xs.json</code> はStrata側の設定ファイルで、このアプリには含まれません。構築時の名前に合わせてください。</p>
+<div class="copy-block"><pre>.venv\Scripts\python.exe -u serve/server.py --engine strata --config strata-iq2_xs.json --host 127.0.0.1 --port 8080</pre></div>
+<p>PowerShellで状態を確認します。<code>loaded</code> が <code>true</code> になるまで待ちます。モデルの読込みには数分かかることがあります。</p>
+<div class="copy-block"><pre>Invoke-RestMethod http://127.0.0.1:8080/health</pre></div>
+<p>アプリの「汎用」タブの「制作AI」で「Strata」を選びます。Strataの状態確認はモデルの読込みまでの確認です。原作からの生成成功や、物語・絵の品質の保証ではありません。</p>
+
+<h2 id="local-settings">接続先・モデル名を .env で設定する</h2>
+<p>実行するアプリの <code>start-studio.cmd</code> と同じフォルダの <code>.env</code> を使います。Publish版ならPublish内です。作品フォルダの <code>.env</code> は読みません。ファイルがなければ <code>.env.example</code> をコピーし、既にあれば必要な行だけ追記・編集します。UTF-8で保存してください。</p>
+<div class="copy-block"><pre>LOCAL_AI_URL=http://127.0.0.1:8080/v1/chat/completions
+LOCAL_AI_MODEL=qwen3.8-flash-next-iq2_xs</pre></div>
+<p>これは既定値の例です。ホスト名・ポート番号をサーバーに合わせ、モデル名はサーバーが公開するID（または別名）に合わせます。URLは <code>/v1</code> だけでなく <code>/chat/completions</code> まで含めます。HTTP／HTTPS、IPv6、リバースプロキシのパス接頭辞に対応します。URLへのユーザー名・パスワード・クエリの埋込み、リダイレクト、APIキー認証には対応しません。OSのHTTPプロキシは使いません。</p>
+<p>OSの同名環境変数が <code>.env</code> より優先し、未設定・空欄は既定値になります。同じキーの重複や不正値は通信前にエラーにします。値を引用符で囲むこと、空白の後ろに <code># コメント</code> を書くことは可能です。変数展開は行いません。進行中の処理を終えてStudioを停止してから編集し、再起動してください。</p>
+<p>画面では引き続き <span class="ui">Strata</span> を選びます。Grokには適用されません。設定先に原作・台帳・指示を送るため、管理している推論サーバーを指定します。設定値は画面・制作ログ・作品の設定JSONへ書き出しません。<code>Start-Studio.ps1 -Port</code> は画面用ポートで、この接続先とは別です。</p>
+<p>起動時には同じ設定からモデル一覧APIへGETで接続します。手動確認も可能で、原作送信や文章生成は行いません。</p>
+<div class="copy-block"><pre>python -X utf8 -m studio.cli check-local-ai</pre></div>
+<p><code>/v1/chat/completions</code> なら確認先は <code>/v1/models</code> です。一覧に設定したモデルIDがあれば接続確認成功です。一覧APIが未対応の場合は確認できませんが、Studioは起動できます。この確認はツール呼出しの成功を保証しません。</p>
+<h3>ユーザーの環境によって変わる点</h3>
+<div class="table-wrap"><table>
+<tr><th>項目</th><th>現在の扱い</th></tr>
+<tr><td>モデル・チャットテンプレート</td><td>指定されたツールとJSON引数を正しく返せる必要があります。llama.cpp等の互換APIでの実生成は未検証です。</td></tr>
+<tr><td>コンテキスト長・GPU／メモリ</td><td>推論サーバー側で設定します。短いコンテキストのモデルでは原作やページ数を小さくしてください。アプリの文字数制限とは別です。</td></tr>
+<tr><td>応答速度</td><td>現在は1応答180秒、字コンテ等のツール往復10分の上限が固定です。CPU実行や大きいモデルでは時間切れになる場合があります。</td></tr>
+<tr><td>Thinking・生成パラメータ</td><td><code>reasoning_effort: none</code>、出力上限8192、温度0.2を固定送信します。受け付ける指定やThinkingの制御方法はサーバー・モデルによって異なります。</td></tr>
+<tr><td>認証</td><td>ローカル制作AIへのBearerキー送信は未対応です。Grokは既存CLIのログインを使います。</td></tr>
+</table></div>
+
+<h2 id="strata-example">Strataの動作確認環境（参考）</h2>
+<p>2026-10-17の開発記録にある構成です。唯一の対応環境や最低スペックを表すものではありません。最新版で同じ構築手順が使えるかは公式資料を確認してください。</p>
+<div class="table-wrap"><table>
+<tr><th>項目</th><th>記録された構成</th></tr>
+<tr><td>Strata本体</td><td><a href="https://github.com/Niko1221/Strata">Niko1221/Strata</a>、コミット <code>7695859</code>、エンジン <code>0.1.43</code></td></tr>
+<tr><td>モデル</td><td><a href="https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF">Qwen3.8-Flash-Next-GSQ-RCO-GGUF</a> のIQ2_XS、リビジョン <code>ed59f92</code>、2ファイル計約68GB</td></tr>
+<tr><td>待受け・設定</td><td><code>127.0.0.1:8080</code>、コンテキスト256K、画像入力オフ</td></tr>
+<tr><td>実行環境</td><td>GeForce RTX 4070 Ti SUPER（VRAM 16GB）、メモリ64GB。出力約50〜100トークン／秒</td></tr>
+<tr><td>入力・出力の例</td><td>通常の依頼で入力約1.5万〜2万トークン、字コンテ2ページの出力約2,500トークン。原作・台帳・依頼内容で変動する。</td></tr>
+</table></div>
+<p>同構成で使われた構築コマンド（Strataフォルダで実行）:</p>
+<div class="copy-block"><pre>.\START-HERE.bat --setup --yes --family qwen --model IQ2_XS --context 262144 --vram-reserve-mib 1500 --experimental-speed-projection on --no-start</pre></div>
+<p>本体・モデルのリビジョンと構築条件を揃えても、ハードウェアから自動設定されるキャッシュや並列数、処理速度、各応答は同じとは限りません。速度不足で180秒に達した場合は停止します。温度0.2のため同じ入力でも結果が変わります。</p>
+
+<h2 id="grok">Grok CLIの準備</h2>
+<p>公式のGrok Build CLIを使います。同名の第三者製CLIとの互換性は確認していません。Windows PowerShell用の導入コマンドは<a href="https://grok.com/release-notes/jun-03-2026">公式案内</a>に掲載されています。導入条件は<a href="https://docs.x.ai/build/overview">公式の導入手順</a>も確認してください。</p>
+<div class="copy-block"><pre>irm https://x.ai/cli/install.ps1 | iex</pre></div>
+<p>導入後、新しいPowerShellを開いて確認し、ログインします。</p>
+<div class="copy-block"><pre>grok --version
+grok login</pre></div>
+<p>認証はCLIの案内に従います。アプリにはGrok用のキー入力欄はありません。CLIの認証ファイルを作品フォルダや設定JSONへコピーしないでください。</p>
+<ol>
+<li>アプリを起動・再読込みし、「汎用」タブの「制作AI」で <span class="ui">Grok</span> を選びます。選択はブラウザに記憶されます。</li>
+<li>「Grok（CLI未検出）」なら、<code>grok</code> がPATHで見つかるか確認します。アプリはWindowsでは <code>%USERPROFILE%\.grok\bin\grok.exe</code> も探します。PATHを変更した場合はアプリを起動する端末も開き直します。</li>
+<li>準備後のページ割りや2ページの字コンテ作成が、実際の制作AI接続の確認になります。原作等がクラウドへ送られ、Grok側の利用枠・費用が適用されます。</li>
+</ol>
+<p>アプリはジョブごとに独立した短いCLI処理を呼ぶため、対話画面の常駐は不要です。組込みシェル・ファイル操作・別エージェント等は使わせず、限定された保存・検証処理をアプリ側で実行します。失敗時にStrataへ自動で切り替えることはありません。</p>
+<h3>CLIの確認範囲</h3>
+<p>2026-10-20にローカルの <code>grok 1.0.60 (01a8e1c591c0) [stable]</code> で <code>--version</code>、<code>--help</code>、<code>login --help</code> を確認しています。アプリが使う <code>--prompt-file</code>、<code>--json-schema</code>、<code>--output-format json</code>、<code>--tools</code>、<code>--disallowed-tools</code> 等が存在します。最低対応バージョンは定義しておらず、全バージョンでの互換性は未検証です。導入・ログイン・生成をこの確認で再実行したわけではありません。</p>
+
+<h2 id="connection">接続確認の範囲</h2>
+<div class="table-wrap"><table>
+<tr><th>確認方法</th><th>確認できること</th></tr>
+<tr><td>Studio起動時／<code>check-local-ai</code></td><td>設定した接続先のモデル一覧APIとモデルID。生成・ツール呼出しは未確認。失敗しても起動を妨げない。</td></tr>
+<tr><td>Strataの <code>/health</code></td><td>Strataの応答とモデルの読込み状態。</td></tr>
+<tr><td>Grokが選択可能</td><td>CLI実行ファイルの存在だけ。ログインや利用枠の有効性は確認しない。</td></tr>
+<tr><td>右上の「接続・残量を確認」</td><td>NovelAIの契約・Anlas残量・V5利用枠。NovelAIへ接続するが画像は生成しない。制作AIの確認ではない。</td></tr>
+<tr><td>Qwen作品の「作品専用」→「接続確認」</td><td>ローカルComfyUIとの接続。必要モデルは生成直前にも確認する。<a href="qwen-image.html">準備と必要モデル</a>。</td></tr>
+</table></div>
+
+<h2 id="timing">所要時間の参考値</h2>
+<p>過去の制作記録に基づく例です。PC、サービスの混雑、入力の長さ、修正回数で変わるため、待ち時間の保証ではありません。</p>
+<div class="table-wrap"><table>
+<tr><th>操作</th><th>Strata＋NovelAIの12ページ制作例</th><th>Grok＋NovelAIの8ページ制作例</th></tr>
+<tr><td>ページ割り</td><td>約20秒</td><td>同条件の比較値なし</td></tr>
+<tr><td>最初の字コンテ2ページ</td><td>約40秒</td><td>約109秒</td></tr>
+<tr><td>残りの字コンテ</td><td>10ページ約3分</td><td>6ページ約9分</td></tr>
+<tr><td>入力点検</td><td>約1分</td><td>約5分14秒</td></tr>
+<tr><td>NovelAIの画像生成</td><td>48枚約8分半（1枚約10秒）</td><td>制作AIの所要時間とは別</td></tr>
+<tr><td>書出し</td><td>PNGは数秒の例</td><td>PSDは8ページで約1分の例</td></tr>
+</table></div>
+<p><a href="index.html#steps">基本の使い方へ進む</a></p>
+</main><script src="guide.js"></script></body></html>

@@ -2,16 +2,20 @@
 // Loading a work into every part of the screen, and start-up.
 async function load(id, keep = true) {
   await metaReady;
-  const old = keep ? selected : null; const result = await api('/api/project/' + encodeURIComponent(id)); project = result.project; manifest = result.manifest; sections = result.sections || []; wholeSettings = result.whole_settings || [];
-  inputs = result.inputs; genState = result.generation_state || {};
+  const sameWork = project?.id === id;
+  const old = keep && sameWork ? selected : null;
+  const result = await api('/api/project/' + encodeURIComponent(id));
+  if (!sameWork) pageIndex = rememberedPage(id);
+  project = result.project; manifest = result.manifest; sections = result.sections || []; wholeSettings = result.whole_settings || [];
+  inputs = result.inputs; genState = result.generation_state || {}; referenceCatalog = result.references || [];
   $('title').textContent = project.title; $('subtitle').textContent = `${project.pages.length} / 24 ページ · ${project.characters.length} 人物 · ${(project.locations || []).length} 背景 · Revision ${project.revision}`;
   // The setup card stays open while the user is working through a page plan; otherwise it shows only for a work with no pages.
-  const setupOpen = keep && !$('setup').hidden && (project.page_plan?.pages || []).some(r => r.page > project.pages.length);
+  const setupOpen = keep && sameWork && !$('setup').hidden && (project.page_plan?.pages || []).some(r => r.page > project.pages.length);
   $('empty').hidden = true; $('setup').hidden = !!project.pages.length && !setupOpen; $('studio').hidden = !project.pages.length;
   $('batch-controls').hidden = !project.pages.length;
   $('mode-controls').hidden = false; $('generation-mode').value = project.render_mode || 'panels';
-  $('mode-label').textContent = isWhole() ? 'ページ一括生成（NovelAIが1ページを1枚で描く）' : 'コマ別生成（コマごとに画像を作り、台詞を後から組版）';
-  $('mode-note').textContent = isWhole() ? 'ページを1枚で生成します。文字は後付け／NovelAI描画を選択できます。コマ別の画像も保存されます。' : 'コマを個別に生成し、台詞を後から組みます。';
+  $('mode-label').textContent = isWhole() ? 'ページ一括生成（画像モデルが1ページを1枚で描く）' : 'コマ別生成（コマごとに画像を作り、台詞を後から組版）';
+  $('mode-note').textContent = isWhole() ? 'ページを1枚で生成します。文字は後付け／画像モデル描画を選択できます。コマ別の画像も保存されます。' : 'コマを個別に生成し、台詞を後から組みます。';
   $('generate-all').closest('.range-controls').hidden = isWhole();
   $('new-pages').hidden = project.pages.length >= 24;
   $('batch-title').textContent = `${project.pages.length + 1}ページ目から字コンテを作成`;
@@ -44,9 +48,9 @@ window.addEventListener('beforeunload', e => { if (anyDirty()) { e.preventDefaul
 document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (!$('save-all').disabled) $('save-all').click(); } });
 (async () => {
   try {
-    await metaReady; setupProviders(meta.llm_providers); renderGeneralSystem(); renderSettings(); showStorage(); updatePager();
+    await metaReady; setupProviders(meta.llm_providers); renderGeneralSystem(); renderSettings(); renderImageSettings(); showStorage(); updatePager();
     const items = await library();
-    if (items.length) await load(items[0].id); else await budget();
+    const first=items.find(p=>p.compatible); if (first) await load(first.id); else await budget();
     const jobs = await api('/api/jobs');
     if (jobs.length) { await load(jobs[0].project_id); await action(() => waitJob(jobs[0])); }
   } catch (e) { status(e.message, true); }

@@ -154,6 +154,7 @@ def is_stale(project, panel=None, page_number=None):
     if not path.exists(): return True
     current=build_page_request(project,page_number) if page_number is not None else build_request(project,panel)
     previous=db.read_json(path)
+    if previous.get('provider')=='qwen': return True
     desired=project['pages'][page_number-1].get('whole',{}).get('seed') if page_number is not None else panel.get('seed')
     return (desired is not None and desired!=previous['parameters']['seed']) or request_signature(previous)!=request_signature(current)
 
@@ -228,6 +229,8 @@ def generate(project_id, panel_id, request_id, expected_revision=None, *, page_n
                 if old['project_id'] != project_id or old.get('panel_id') != panel_id or old.get('page_number') != page_number or old.get('preview') != preview:
                     raise db.StudioError('同じ要求IDを別の作品・コマには使えません')
                 return state['requests'][request_id]  # Idempotent replay never sends again.
+            from . import qwen
+            if qwen.unresolved(): raise db.StudioError('QwenImageに未確認の生成があります。履歴を確認してください')
             if state.get('halted'):
                 raise db.StudioError('費用台帳が停止中です。使い方ガイドの「困ったとき」を確認してください')
             if state['spent'] >= budget_limit(state):
@@ -235,6 +238,7 @@ def generate(project_id, panel_id, request_id, expected_revision=None, *, page_n
             if any(r['status'] in ('sending', 'unknown') for r in state['requests'].values()):
                 raise db.StudioError('未確認の生成があります。自動再送せず費用台帳を確認してください')
             project = db.load(project_id)
+            if project['output_method']!='novelai': raise db.StudioError('NovelAI作品ではありません')
             if expected_revision is not None and project['revision'] != expected_revision:
                 raise db.StudioError('編集競合: 最新の保存内容を読み直してください')
             if preview is not None:

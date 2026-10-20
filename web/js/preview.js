@@ -1,6 +1,11 @@
 'use strict';
+function rememberedPage(id) {
+  const n = Number(storedValue('manga-page-' + id));
+  return Number.isInteger(n) && n >= 0 && n < 24 ? n : 0;
+}
 // Centre lane: the shown page, hotspots, panel strip, pager, zoom and page generation.
 function renderPages() {
+  storeValue('manga-page-' + project.id, String(pageIndex));
   $('page-select').replaceChildren(...project.pages.map((p, i) => { const opt = el('option', `PAGE ${String(i + 1).padStart(2, '0')}`); opt.value = i; return opt; })); $('page-select').value = pageIndex;
   const record = manifest?.pages?.[pageIndex]; $('page-image').src = record ? asset(record.file) : ''; $('page-image').hidden = !record;
   $('page-hotspots').replaceChildren();
@@ -62,12 +67,12 @@ function producePlan() {
   const stale = isWhole() ? [genState['page-' + number]].filter(Boolean).length : page.panels.filter(c => genState[c.id]).length;
   const targets = isWhole() ? 1 : (regenerate ? page.panels.length : stale);
   const points = [dirty ? '未保存の編集があります。生成の前に、画面の入力をすべて保存します。' : '画面の入力をすべて保存してから生成します。'];
-  if (isWhole()) points.push('ページ一括生成: NovelAIへ、このページ1枚分の画像（コマ割りを含む）を1回要求します。');
+  if (isWhole()) points.push('ページ一括生成: 選択中の画像モデルへ、このページ1枚分の画像（コマ割りを含む）を1回要求します。');
   else points.push(targets ? `コマ別生成: このページの ${targets} コマを1枚ずつ生成し、ページに組版します。` : '生成が必要なコマはありません（生成済みで変更なし）。組版だけを行います。');
   if (!isWhole() && !regenerate) points.push('生成済みで設定が変わっていないコマは対象外です。作り直す場合は、作品専用タブの「採用済みで変更のない画像も生成し直す」を入れてください。');
   points.push('生成の前の点検は、このページと共通設定だけが対象です。他のページの警告では止まりません。');
   if ($('ignore-warnings-auto').checked) points.push('「点検の警告があっても無視して生成する」が入っています。点検で警告が出ても確認せずに生成します（データ構造・費用・結果不明の停止は無視されません）。');
-  points.push('NovelAIへの送信は1枚ずつ順に行い、Opus契約の無料枠対象の設定だけを使います。結果が不明な送信は自動で再送しません。');
+  points.push(imageLabel() === 'NovelAI' ? 'NovelAIへ1枚ずつ送信します。Opus対象設定・費用上限を使い、結果不明時は自動再送しません。' : 'QwenImage 2.1へ1枚ずつ送信します。ローカル生成でAnlas消費はありません。結果不明時は自動再送しません。');
   return {number, targets, points};
 }
 $('produce-page').onclick = () => {

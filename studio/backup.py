@@ -121,8 +121,10 @@ def soft_delete(project_id, confirm, *, busy=False):
     if not (folder / 'project.json').exists(): raise db.StudioError('作品がありません')
     if busy: raise db.StudioError('この作品は処理中です。完了してから削除してください')
     from . import novelai
+    from . import qwen
     state = novelai.ledger()
-    if any(r.get('project_id') == project_id and r.get('status') in ('sending', 'unknown') for r in state['requests'].values()):
+    records=list(state['requests'].values())+list(qwen.ledger()['requests'].values())
+    if any(r.get('project_id') == project_id and r.get('status') in ('sending', 'unknown') for r in records):
         raise db.StudioError('結果が未確認の画像生成があります。費用台帳を確認するまで削除できません')
     project = db.load(project_id)
     with db.LOCK, db.exclusive(folder / '.project.lock'):

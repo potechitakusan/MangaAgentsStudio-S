@@ -59,7 +59,7 @@ def bundle(project_id,kind='png',include_text=True,progress=None):
             if kind=='psd': record['psd_verification']=write_psd(folder/(name+'.psd'),layers,p,number)
             records.append(record)
         (folder/'dialogue.md').write_text(dialogue_markdown(p),encoding='utf-8')
-        db.dump(folder/'settings.json',dict(schema='manga-studio-inputs-v2',inputs=workspace.editable(p)))
+        db.dump(folder/'settings.json',workspace.config_export(project_id,'all'))
         db.dump(folder/'manifest.json',dict(revision=p['revision'],kind=kind,include_text=include_text,pages=records))
         archive=folder/'download.zip'
         with zipfile.ZipFile(archive,'w',compression=zipfile.ZIP_DEFLATED) as z:

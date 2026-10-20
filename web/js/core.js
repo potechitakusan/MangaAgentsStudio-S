@@ -68,9 +68,10 @@ function confirmDiscard(question) { return !dirty || confirm(`${question}\n\n未
 // Everything is locked while a job runs, except the stop button and the navigation controls (tabs, library, zoom).
 function setBusy(value) {
   busy = value;
-  document.querySelectorAll('button,input,select,textarea').forEach(b => { if (b.id !== 'cancel-production' && !b.hasAttribute('data-cancel')) b.disabled = value; });
+  document.querySelectorAll('button,input,select,textarea').forEach(b => { if (b.id !== 'cancel-production' && !b.hasAttribute('data-cancel')) b.disabled = value || b.hasAttribute('data-unavailable'); });
   document.querySelectorAll('[data-nav]').forEach(b => { b.disabled = false; });
   updatePager(); updateSaveAll();
+  if (typeof syncLibraryControls === 'function') syncLibraryControls();
 }
 async function api(path, data) {
   if (path === '/api/job' && data) data = {...data, llm_provider: llmProvider()};

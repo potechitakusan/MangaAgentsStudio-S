@@ -7,7 +7,7 @@ import unittest
 import uuid
 from pathlib import Path
 from unittest.mock import patch
-from studio import server, jobs, novelai, workspace, project as db
+from studio import server, jobs, novelai, workspace, images, project as db
 
 
 class RouteTests(unittest.TestCase):
@@ -65,6 +65,33 @@ class RouteTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assert_json('POST', path, 403, {'error': 'この画面を再読み込みしてください'}, token=False)
 
+    def test_library_confirmation_and_restore_routes(self):
+        def call(data):
+            return self.request('POST', '/api/library-visibility', body=json.dumps(data).encode())
+        self.assertEqual(call(dict(project_id='test', excluded=True))[0], 400)
+        self.assertEqual(call(dict(project_id='test', excluded=True, confirmed=True))[0], 200)
+        self.assert_json('GET', '/api/projects', 200, [])
+        code, payload = self.request('GET', '/api/library')
+        self.assertEqual(code, 200); self.assertTrue(json.loads(payload)[0]['excluded'])
+        self.assertEqual(call(dict(project_id='test', excluded=False))[0], 200)
+        self.assertEqual(db.load('test')['revision'], 0)
+
+    def test_position_save_compose_and_conflict_routes(self):
+        from PIL import Image
+        folder = db.directory('test') / 'images'; folder.mkdir()
+        Image.new('RGB', (100,100), 'red').save(folder / 'art.png')
+        board = dict(output_method='novelai', title='テスト', style='illustration', characters=[],
+            pages=[dict(template='splash', panels=[dict(id='p1',scene='色見本',prompt='red',characters=[],dialogue=[])])])
+        p = db.import_board('test', 0, board)
+        p = db.mutate('test', p['revision'], lambda p: p['pages'][0]['panels'][0].update(image='images/art.png'))
+        request = json.dumps(dict(project_id='test', revision=p['revision'], panel_id='p1', transform=dict(x=.25,y=0,scale=.5))).encode()
+        self.assertEqual(self.request('POST', '/api/panel-position', body=request)[0], 200)
+        self.assertEqual(self.request('POST', '/api/panel-position', body=request)[0], 400)
+        self.assertEqual(self.request('POST', '/api/compose-page', body=b'{"project_id":"test","page_number":1}')[0], 200)
+        self.assertTrue((db.directory('test')/'output/page-001.png').exists())
+        for number in ('null', 'true', '0', '2'):
+            self.assertEqual(self.request('POST', '/api/compose-page', body=('{"project_id":"test","page_number":'+number+'}').encode())[0], 400)
+
     def test_all_routes_reject_invalid_host_before_dispatch(self):
         for method in ('GET', 'POST'):
             for path in self.paths():
@@ -93,8 +120,19 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(data['templates'], {k: len(v) for k, v in db.TEMPLATES.items()})
         self.assertEqual(data['system'], workspace.DEFAULT_SYSTEM)
 
+    def test_qwen_page_preview_counts_actual_sent_text(self):
+        db.import_board('test',0,db.read_json(db.ROOT/'templates/board.example.json'))
+        p=db.load('test');p['output_method']='qwen';
+        for page in p['pages']: page.get('whole',{}).pop('draft',None)
+        db.dump(db.directory('test')/'project.json',p)
+        status,body=self.request('POST','/api/page-request',json.dumps(dict(project_id='test',page_number=1)).encode())
+        result=json.loads(body)
+        self.assertEqual(status,200)
+        self.assertEqual(result['request']['provider'],'qwen')
+        self.assertEqual(result['preview']['prompt_characters'],len(result['request']['input']))
+
     def test_get_projects(self):
-        self.assert_json('GET', '/api/projects', 200, [dict(id='test', title='テスト', revision=0, pages=0)])
+        self.assert_json('GET', '/api/projects', 200, [dict(id='test', title='テスト', revision=0, pages=0,output_method='novelai',compatible=True)])
 
     def test_client_disconnects_are_not_printed(self):
         import contextlib, io
@@ -120,7 +158,7 @@ class RouteTests(unittest.TestCase):
     def test_carry_export_leaves_pages_and_source_behind(self):
         from studio import workspace
         out = workspace.config_export('test', 'carry')
-        self.assertEqual(out['schema'], 'manga-studio-inputs-v2')
+        self.assertEqual(out['schema'], 'manga-studio-inputs-v3')
         self.assertEqual(set(out['inputs']) - set(workspace.CARRY_FIELDS), set())
         self.assertNotIn('pages', out['inputs']); self.assertNotIn('source', out['inputs'])
         db.create('next', '続き', '## 第一章\n続きの原作')
@@ -138,7 +176,7 @@ class RouteTests(unittest.TestCase):
         status, body = self.request('GET', '/api/project/test')
         self.assertEqual(status, 200)
         data = json.loads(body)
-        self.assertEqual(set(data), {'project', 'manifest', 'sections', 'whole_settings', 'inputs', 'generation_state', 'review'})
+        self.assertEqual(set(data), {'project', 'manifest', 'sections', 'whole_settings', 'inputs', 'generation_state', 'review', 'references'})
         self.assertEqual(data['project'], self.project)
         job = dict(id='active', status='running')
         jobs.JOBS.update(active=job, done=dict(id='done', status='complete'))

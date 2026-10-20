@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QwenImageで生成する</title><link rel="stylesheet" href="guide.css"></head>
+<body><header class="top"><nav class="top-inner" aria-label="ガイド"><a class="brand" href="index.html">MangaAgentsStudio ガイド</a><a href="index.html">基本の使い方</a><a href="tips.html">NovelAIのTips</a><a href="qwen-image.html" aria-current="page">QwenImageで生成</a></nav></header>
+<main><h1>QwenImage 2.1で生成する</h1><p class="lead">起動済みのローカルComfyUIを使い、NovelAIと同じ画面からコマやページを生成できます。</p>
+<h2>Qwen作品を作る</h2><ol><li>ComfyUIを <code>127.0.0.1:8188</code> で起動します。</li><li>StrataとGPUメモリが競合する場合は停止し、汎用タブの制作AIをGrokにします。Grok CLIのログインが必要です。<a href="setup.html#grok">Grokの準備</a>。</li><li>作品作成画面の画像モデルで「QwenImage 2.1 Turbo」を選びます。作成後は固定されます。</li><li>作品専用タブの「接続確認」の後、人物（衣装ごとの全身）と背景を試し描きし、確認した画像を「参照画像に登録」します。</li><li>通常どおり点検し、ページまたは作品を生成します。PNG・PSD・台詞の書出しも同じ操作です。</li></ol>
+<h2>プロンプトのみ／参照画像を使う</h2><p>作品専用タブの「キャラクター・背景の制御」で選び、保存します。Qwenの新規作品は参照画像を使う設定です。試し描き自体は常に文章から生成し、漫画の採用画像は変えません。履歴から選んだ画像も登録できます。</p><p>人物は衣装ごと、背景は登録IDごとに参照を1枚選びます。各コマに必要な画像だけをimage1、image2…として自動で割り当て、以後も同じファイルを使います。ページ一括では重複を除いた参照を使います（最大16枚）。人物の表情や動作はコマ側で指定します。</p><p>参照が未登録、ファイルがない、外見・衣装・画風が変更された場合は生成前に止まります。新しい試し描きを確認して登録するか、「プロンプトのみ」へ切り替えてください。モデルが参照の内容を必ず再現する保証はありません。背景の試し描きが室内・店外などの意図に合っているかも確認してください。</p><h2>JSONの出力方式</h2><p>作品・字コンテ・設定JSON・ページ設計JSONは<code>output_method</code>を持ちます（<code>novelai</code>／<code>qwen</code>）。作品と異なる方式、属性のない旧形式は取込エラーです。別方式を使うには新しい作品を作り、利用者がJSON形式を編集する必要があります。変換ツールや自動移行はありません。旧作品フォルダはそのまま残します。</p><p>設定JSONには参照画像ファイルを含めません。同じ方式の別作品へ設定を取り込んだ場合も、その作品内の参照を用意してください。参照画像も保管するには「画像も含めてバックアップ」を使います。</p>
+<h2>Qwen向けのプロンプト</h2><p>英語の短い文章で、誰が何をしているか、左右、視線の相手、カメラと光を具体的に書きます。外見・衣装・表情・背景・小物は保存した人物・背景・小物の設定から合成されます。既存のタグ文を直したい場合は、選択した制作AIへ明示的に改稿を依頼してください。</p>
+<pre>Two adults face each other beside the café window.
+The woman on the left holds a small cloth bag.
+The man on the right points at the umbrella stand.
+They look at each other in three-quarter profile.</pre>
+<p>NovelAIのタグ辞書はそのまま使えますが、Qwenでの効きを確認した辞書ではありません。Qwenには人物の座標を専用のピンとして渡せないため、位置も文章で表します。TurboはCFG 1なので、除外欄にNovelAIと同じ効果は期待しないでください。</p>
+<h2>アニメ調の仕上げ</h2><p>作品専用タブで「Anima＋LoRAでアニメ調に仕上げる」を有効にすると、Qwenの原画をAnimaへ渡す工程が追加されます。denoiseは0.25〜0.35、まずは0.30で試してください。顔・線・色だけでなく小物や構図も変わることがあるため、原画と見比べて選びます。</p>
+<p>Qwen原画、仕上げ画像、両方の処理時間を履歴に保存します。追加時間にはモデルの切替も含みます。QwenにAnima用LoRAを直接適用する方式ではありません。</p>
+<h2>必要なモデル</h2><p>この接続は次のローカルモデルを前提にしています。接続成功だけでは、モデルがすべて揃っているとは限りません。生成直前にも確認します。</p>
+<ul><li>Qwen: <code>qwen_image_2.1_turbo_int8_convrot.safetensors</code>、<code>qwen3vl_8b_int8_convrot.safetensors</code>、<code>qwen_image_2.1_vae_bf16.safetensors</code></li><li>仕上げ: <code>waiANIMA_v10</code>、<code>qwen_3_06b_base</code>、<code>qwen_image_vae</code>、<code>Anima-Preview_Turbo_8step</code>、<code>am_anima_lora</code>、<code>o1_anima_lora</code>、<code>anima-lllite-any-test-like-v2</code>（各safetensors）</li></ul>
+<h2>費用と停止</h2><p>Qwenのローカル生成はAnlasを消費しません。Grokの利用料は別です。画像は1枚ずつ生成し、結果が不明な通信は自動再送しません。止まった場合は保存されたprompt_idとComfyUIの履歴を確認してください。「停止」は現在の画像が終わった後に効きます。</p>
+<p>ページ一括の実コマ境界は未検出です。文字を後から組む場合も、原画に混じった不要な文字は自動消去できません。</p>
+<h2>公式資料</h2><p><a href="https://huggingface.co/Qwen/Qwen-Image-2.1-Turbo">Qwen Turboのモデルカード</a>、<a href="https://huggingface.co/Comfy-Org/Qwen-Image-2.1">ComfyUI向け重み</a>、<a href="https://huggingface.co/Qwen/Qwen-Image-2.1-PE-T2I/blob/main/system_prompt.txt">Qwen公式のプロンプト記述方針</a>、<a href="https://huggingface.co/circlestone-labs/Anima">Anima公式</a>。確認日: 2026-10-17。</p>
+</main></body></html>

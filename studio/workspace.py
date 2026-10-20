@@ -13,7 +13,7 @@ DEFAULT_SYSTEM = {
     'constraints':'原作にない結末を追加しない。見えている小物だけをprop_idsへ登録する。人物の固定外見はコマpromptに重複記載しない。',
 }
 EMPTY_SYSTEM = {key:'' for key in DEFAULT_SYSTEM}
-COMMON_FIELDS = ('title','style','style_ja','style_negative','style_negative_ja','style_preset','system','system_layered','characters','locations','props','source','render_mode','text_mode','ui_inputs','page_plan')
+COMMON_FIELDS = ('output_method','image_settings','title','style','style_ja','style_negative','style_negative_ja','style_preset','system','system_layered','characters','locations','props','source','render_mode','text_mode','ui_inputs','page_plan')
 STYLE_PRESETS = db.read_json(db.ROOT/'templates/style-presets.json')['styles']
 
 def system_defaults():
@@ -60,6 +60,9 @@ def fingerprint(project, pages=None):
     data.pop('ui_inputs',None)
     data.pop('page_plan',None)   # planning notes for pages not drawn yet; drawn pages carry their own content
     data['effective_system']=effective_system(project)
+    from . import images
+    data['image_settings']=images.for_project(project)
+    data['references']=project.get('references',{})
     if pages is not None: data['pages']=[data['pages'][n-1] for n in pages]
     return hashlib.sha256(json.dumps(data,ensure_ascii=False,sort_keys=True).encode()).hexdigest()
 
@@ -95,6 +98,8 @@ def clean_panel(panel, old, locations):
 def save(project_id, revision, value):
     if not isinstance(value,dict) or set(value)-set(COMMON_FIELDS)-{'pages'}: raise db.StudioError('設定JSONの項目が不正です')
     def apply(p):
+        from . import images
+        if 'output_method' in value: images.require_match(p, value)
         p.setdefault('source',(db.directory(project_id)/'source.txt').read_text(encoding='utf-8-sig'))
         p.setdefault('render_mode','panels')
         p.setdefault('text_mode','overlay')
@@ -131,6 +136,7 @@ def save(project_id, revision, value):
                 page['panels']=[clean_panel(c,old_panels.get(c.get('id')),p['locations']) for c in item['panels']]
                 if 'whole' in item:
                     settings=item['whole']
+                    if 'draft' in settings: images.require_match(p,settings['draft'])
                     if set(settings)-{'format','seed','draft','linked'}: raise db.StudioError('一括設定の項目が不正です')
                     page.setdefault('whole',{}).update(copy.deepcopy(settings))
                 new_pages.append(page)
@@ -164,18 +170,23 @@ def resize_page(project_id,revision,number,template):
     return save(project_id,revision,value)
 
 # What carries over to a follow-up work (e.g. after 24 pages): look and catalogs, not pages, source or screen inputs.
-CARRY_FIELDS=('style','style_ja','style_negative','style_negative_ja','style_preset','system','system_layered','characters','locations','props')
+CARRY_FIELDS=('output_method','image_settings','style','style_ja','style_negative','style_negative_ja','style_preset','system','system_layered','characters','locations','props')
 
 def config_export(project_id,scope):
     p=db.load(project_id)
-    if scope=='system': return dict(schema='manga-studio-system-v1',system=editable(p)['system'])
+    if scope=='system': return dict(schema='manga-studio-system-v2',output_method=p['output_method'],system=editable(p)['system'])
     if scope=='carry':
         e=editable(p)
-        return dict(schema='manga-studio-inputs-v2',inputs={k:e[k] for k in CARRY_FIELDS if k in e})
+        return dict(schema='manga-studio-inputs-v3',output_method=p['output_method'],inputs={k:e[k] for k in CARRY_FIELDS if k in e})
     if scope!='all': raise db.StudioError('設定出力はsystem/carry/allです')
-    return dict(schema='manga-studio-inputs-v2',inputs=editable(p))
+    return dict(schema='manga-studio-inputs-v3',output_method=p['output_method'],inputs=editable(p))
 
 def config_import(project_id,revision,data):
-    if data.get('schema')=='manga-studio-system-v1': return save(project_id,revision,{'system':validate_system(data['system'])})
-    if data.get('schema')=='manga-studio-inputs-v2': return save(project_id,revision,data['inputs'])
+    from . import images
+    p=db.load(project_id)
+    images.require_match(p,data)
+    if data.get('schema')=='manga-studio-system-v2': return save(project_id,revision,{'system':validate_system(data['system'])})
+    if data.get('schema')=='manga-studio-inputs-v3':
+        images.require_match(p,data.get('inputs'))
+        return save(project_id,revision,data['inputs'])
     raise db.StudioError('対応する設定JSONではありません')

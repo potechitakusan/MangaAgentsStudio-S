@@ -51,7 +51,7 @@ with sync_playwright() as p:
             # UI file import must reject a different provider and leave the work intact.
             token=page.request.get(BASE+'/api/session').json()['token']
             value=page.request.get(BASE+'/api/project/'+created[0]).json()['inputs']
-            data=json.dumps(dict(schema='manga-studio-inputs-v3',output_method='novelai',inputs=value)).encode()
+            data=json.dumps(dict(schema='manga-studio-inputs-v4',output_method='novelai',inputs=value)).encode()
             page.locator('#import-settings-file').set_input_files(dict(name='wrong.json',mimeType='application/json',buffer=data))
             expect(page.locator('#status')).to_contain_text('output_method',timeout=10000)
             assert page.request.get(BASE+'/api/project/'+pid).json()['project']['output_method']=='qwen'

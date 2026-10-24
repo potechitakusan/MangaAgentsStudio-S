@@ -5,7 +5,7 @@
 <header class="top"><nav class="top-inner" aria-label="ガイド"><a class="brand" href="index.html">MangaAgentsStudio ガイド</a><a href="index.html">基本の使い方</a><a href="setup.html">制作AIの準備</a><a href="reference.html" aria-current="page">仕様の補足</a></nav></header>
 <main>
 <h1>入力・保存・出力の仕様補足</h1>
-<ul class="toc"><li><a href="#limits">入力制限</a></li><li><a href="#storage">保存先とバックアップ</a></li><li><a href="#output">出力と画像の位置</a></li><li><a href="#whole">ページ一括生成</a></li><li><a href="#compatibility">設定JSONと旧形式</a></li><li><a href="#novel-api">小説生成API</a></li></ul>
+<ul class="toc"><li><a href="#limits">入力制限</a></li><li><a href="#storage">保存先とバックアップ</a></li><li><a href="#output">出力と画像の位置</a></li><li><a href="#a-import">Aからの取り込み</a></li><li><a href="#whole">ページ一括生成</a></li><li><a href="#compatibility">設定JSONと旧形式</a></li><li><a href="#novel-api">小説生成API</a></li></ul>
 
 <h2 id="limits">保存上限と、制作AIに渡す上限</h2>
 <p>原作を保存できても、その全体を一度の処理で渡せるとは限りません。長い原作は <code>## 第一章</code> のような見出しで分けます。最初の章見出しより前は共通設定です。見出しがない原作は全体を1区間として扱います。</p>
@@ -32,6 +32,7 @@
 <tr><td><code>output/page-001.png</code>／<code>output/overview.png</code></td><td>組版したページ／全ページ一覧。</td></tr>
 <tr><td><code>output/manifest.json</code></td><td>寸法、枠、原画、クロップ、文字位置等の配置情報。</td></tr>
 <tr><td><code>agent-runs/</code></td><td>制作AI（Strata／Grok）の実行履歴。Grokの費用はCLIが報告した範囲のみで、欠落は無料を意味しない。</td></tr>
+<tr><td><code>imports/</code></td><td>Aからの取込元本文・前回入力・対応表・差分の確認理由。再取り込みの比較に使うため、作品と一緒に保管。</td></tr>
 <tr><td><code>exports/&lt;書出しID&gt;/download.zip</code></td><td>PNG／PSD・台詞md・設定JSON・配置情報の書出し。</td></tr>
 <tr><td>アプリ直下の <code>.runtime/anlas-ledger.json</code></td><td>全作品共通のNovelAI費用記録・停止状態。作品ZIPの対象外。</td></tr>
 </table></div>
@@ -49,6 +50,12 @@
 <p>「全ページを書き出す」はサーバー側でZIPを作ります。PNGまたはPSD＋確認用PNG、台詞一覧 <code>dialogue.md</code>、設定JSON、配置情報を含みます。PSDの文字は分離したラスターレイヤーで、ネイティブ文字編集には対応しません。psd-toolsによる再読込・合成一致に検証記録がありますが、Photoshop／CLIP STUDIOでの実読込は未検証です。</p>
 <p>Seed空欄はランダムです。過去のSeedは候補の説明・要求JSONから確認できます。クロップ横・縦は0〜1で、0が左／上、1が右／下。枠より縦長の画像はクロップ縦を0へ寄せると頭部を残せます。「位置調整」ではドラッグ・倍率10〜400%・全体を収める配置もできます。原画は変更せず、PNG／PSDは同じ配置計算を使います。<a href="index.html#placement">位置調整の操作</a>。</p>
 
+<h2 id="a-import">Aから取り込んだプロンプトの編集</h2>
+<p>MangaAgentsStudio-Aの取り込みには配布フォルダの <code>skills/manga-a-import</code> と <code>python -m studio.a_import</code> を使います。通常の設定JSON読込みや作品フォルダ読込みへAのファイルを直接渡す機能ではありません。初回は空のNovelAI／コマ別作品へ取り込み、以後は同じ作品へ再取り込みします。取り込みだけでは画像を生成しません。</p>
+<p><span class="ui">ページ／コマ個別 → NovelAIのプロンプト合成・配置</span> で送信方式を確認できます。「台帳の外見・衣装・背景・画風を合成」は通常のSの編集方式。「原文をそのまま使用」はコマにある場面・人物・除外の全文を送り、共通台帳や画風、品質語を追加しません。原文方式のコマを台帳方式へ変えるときは、同じ外見・衣装を本文と台帳へ二重に残さないよう整理してください。</p>
+<p>人物ごとの除外プロンプトは日英で編集できます。配置ピン・入力順の正負それぞれの設定も保持します。これらの個別設定や原文方式を使う作品はコマ別生成で編集します。Aのモデル・寸法・sampler等はSの固定設定へ変わる場合があり、同seedでも同じ絵の再現は保証しません。Aの画像候補・費用・文字の縦書き／自由配置は取り込み対象外です。</p>
+<p>再取り込みは前回A入力・現在のS・今回A入力を比較し、両方で変えた同じ項目やAで削除したコマは競合として止めます。同じコマIDの採用画像・候補は保持し、入力が変わった画像は必要に応じて再生成します。取込記録は <code>imports/</code> に保存され、バックアップと作品フォルダのコピー読込みに含まれます。全入力の設定JSONだけでは、この再取り込み履歴は移せません。</p>
+
 <h2 id="whole">ページを1枚で生成する（試験）</h2>
 <ol>
 <li>作品作成時に <span class="ui">ページ一括生成（試験）</span> を選びます。既存作品は「作品専用」→「作品の管理（バックアップ・削除）」→「生成方式を変更（上級）」で変更できます。画像モデルの変更とは別です。</li>
@@ -60,8 +67,9 @@
 <p>画像内の実コマ境界は検出していません。テンプレートと同じ境界・文字位置になる保証はありません。枠・文字配置を正確に扱いたい場合はコマ別生成を使います。<a href="tips.html#whole">NovelAIでの特徴</a>。</p>
 
 <h2 id="compatibility">設定JSONと旧形式</h2>
+<p>全入力・引継ぎ用は <code>manga-studio-inputs-v4</code>。旧v3の設定JSONは受け付けません。共通システム専用の <code>manga-studio-system-v2</code> は別形式です。</p>
 <p>「共通システム設定JSON」「引き継ぎ用の設定JSON」「全入力の設定JSON」は用途が異なります。引き継ぎ用は絵柄・システムプロンプト・人物・背景・小物を持ち、原作・ページは持ちません。設定JSONは画像のバックアップではありません。Qwen参照画像は引継ぎ先の作品で用意します。</p>
-<p>作品・字コンテ・設定・ページ設計のJSONには <code>output_method</code>（<code>novelai</code>／<code>qwen</code>）が必要です。取込先と異なる方式や属性がない旧形式は拒否されます。画像モデルは作成時に固定され、自動移行・変換ツールはありません。作成済み字コンテのひな形は配布フォルダの <code>templates/board.example.json</code> です。</p>
+<p>作品・字コンテ・設定・ページ設計のJSONには <code>output_method</code>（<code>novelai</code>／<code>qwen</code>）が必要です。取込先と異なる方式や属性がない旧形式は拒否されます。画像モデルは作成時に固定され、モデル間の変換には対応しません。作成済み字コンテのひな形は配布フォルダの <code>templates/board.example.json</code> です。</p>
 <p>通常のコマ編集とページ一括の設計は連動します。独立した設計が残る対応形式の旧作品では <span class="ui">元コマから作り直す</span> で反映します。</p>
 <p><code>templates/novelai-storyboard-system.txt</code> はページ・コマを先に決める原稿用の指示です。出力を原作欄へ貼る形式で、JSON取込用ではありません。ページ割りとの組合せは未検証です。旧原稿に「次区間への引継ぎ」等の制作メモがある場合は、物語の出来事として扱われないよう本文から外します。</p>
 

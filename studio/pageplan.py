@@ -125,7 +125,8 @@ def missing_ja(project, pages=None):
             for en, ja in (('prompt', 'prompt_ja'), ('negative', 'negative_ja')):
                 if (c.get(en) or '').strip() and not (c.get(ja) or '').strip(): out.append((c['id'], None, en, ja, c[en]))
             for a in c.get('characters', []):
-                if (a.get('prompt') or '').strip() and not (a.get('prompt_ja') or '').strip(): out.append((c['id'], a['id'], 'prompt', 'prompt_ja', a['prompt']))
+                for en,ja in (('prompt','prompt_ja'),('negative','negative_ja')):
+                    if (a.get(en) or '').strip() and not (a.get(ja) or '').strip(): out.append((c['id'], a['id'], en, ja, a[en]))
     return out
 
 def fill_ja(project_id, pages=None, progress=None, transport=None):

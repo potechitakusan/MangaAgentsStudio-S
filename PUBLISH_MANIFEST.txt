@@ -1,6 +1,6 @@
 # MangaAgentsStudio-S release files
-# built 2026-10-20T22:14:12+09:00 from SVN BASE (newest committed revision r258)
-# 187 files
+# built 2026-10-24T19:31:47+09:00 from SVN BASE (newest committed revision r263)
+# 196 files
 .env.example
 examples/lost-camera-12.txt
 examples/novelai-visual-novel-system.txt
@@ -10,17 +10,23 @@ knowledge/novelai/tag-dictionary.json
 LICENSE
 README.md
 requirements.txt
+skills/manga-a-import/agents/openai.yaml
+skills/manga-a-import/references/transfer.md
+skills/manga-a-import/SKILL.md
 skills/manga-production/SKILL.md
 start-studio.cmd
 Start-Studio.ps1
 Stop-Studio.ps1
 studio/__init__.py
+studio/a_import.py
+studio/a_source.py
 studio/agent.py
 studio/backup.py
 studio/cli.py
 studio/compose.py
 studio/exporting.py
 studio/images.py
+studio/import_merge.py
 studio/jobs.py
 studio/layouts.py
 studio/library.py
@@ -31,6 +37,7 @@ studio/pageplan.py
 studio/production.py
 studio/profiles.py
 studio/project.py
+studio/prompt_options.py
 studio/qwen.py
 studio/references.py
 studio/rendering.py
@@ -125,6 +132,7 @@ templates/panel-templates/svg/P6-222-shift-2.svg
 templates/panel-templates/svg/P6-222-shift-3.svg
 templates/style-presets.json
 templates/system.example.json
+tests/browser_a_import.py
 tests/browser_continuation.py
 tests/browser_layout.py
 tests/browser_profiles.py
@@ -133,6 +141,7 @@ tests/browser_smoke.py
 tests/browser_ui_improvements.py
 tests/browser_wholepage.py
 tests/browser_workspace.py
+tests/test_a_import.py
 tests/test_agent_tidy.py
 tests/test_backup.py
 tests/test_llm.py

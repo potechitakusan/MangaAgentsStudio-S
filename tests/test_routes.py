@@ -158,7 +158,7 @@ class RouteTests(unittest.TestCase):
     def test_carry_export_leaves_pages_and_source_behind(self):
         from studio import workspace
         out = workspace.config_export('test', 'carry')
-        self.assertEqual(out['schema'], 'manga-studio-inputs-v3')
+        self.assertEqual(out['schema'], 'manga-studio-inputs-v4')
         self.assertEqual(set(out['inputs']) - set(workspace.CARRY_FIELDS), set())
         self.assertNotIn('pages', out['inputs']); self.assertNotIn('source', out['inputs'])
         db.create('next', '続き', '## 第一章\n続きの原作')

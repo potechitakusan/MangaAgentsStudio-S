@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / 'work'
 LOCK = threading.RLock()
 MAX_PAGES = 24
-PANEL_FIELDS = ('id', 'scene', 'prompt', 'prompt_ja', 'negative', 'negative_ja', 'characters', 'dialogue', 'speakers', 'seed', 'crop', 'image_transform', 'location_id', 'prop_ids', 'needs_edit')
+PANEL_FIELDS = ('id', 'scene', 'prompt', 'prompt_ja', 'negative', 'negative_ja', 'characters', 'dialogue', 'speakers', 'seed', 'crop', 'image_transform', 'location_id', 'prop_ids', 'needs_edit', 'prompt_mode', 'conditioning')
 TEMPLATES = {
     'three': [(0, 0, 1, .44), (.51, .46, .49, .54), (0, .46, .49, .54)],
     'three-wide': [(0, 0, 1, .30), (0, .32, 1, .30), (0, .64, 1, .36)],
@@ -126,6 +126,9 @@ def validate_board(board, allow_incomplete=False):
             if pid in pids: raise StudioError('コマIDが重複しています')
             pids.add(pid)
             validate_panel(panel, ids, allow_incomplete)
+            from . import prompt_options
+            if board.get('output_method') == 'qwen' and prompt_options.special(panel):
+                raise StudioError('人物別除外・個別の配置設定・原文プロンプトはNovelAI専用です')
             for actor in panel.get('characters', []):
                 profiles.validate_actor(next(c for c in cast if c['id']==actor['id']), actor)
             location_id = panel.get('location_id')
@@ -171,6 +174,8 @@ def validate_panel(p, cast_ids, allow_incomplete=False):
     for field in ('prompt_ja','negative_ja'): text_field(p.get(field,''),field,5000,True)
     chars = p.get('characters', [])
     if not isinstance(chars, list) or len(chars) > 6: raise StudioError('コマ人物は最大6人です')
+    from . import prompt_options
+    prompt_options.validate(p)
     used = set()
     for c in chars:
         if not isinstance(c, dict) or c.get('id') not in cast_ids: raise StudioError('未登録の人物IDです')
@@ -217,7 +222,7 @@ def create(project_id, title, source, output_method='novelai'):
         for name in ('AGENTS.md', 'SKILL.md', 'board.example.json'):
             origin = ROOT / 'templates' / name if name != 'SKILL.md' else ROOT / 'skills' / 'manga-production' / name
             (folder / name).write_text(origin.read_text(encoding='utf-8'), encoding='utf-8')
-        project = dict(id=project_id, title=title, revision=0, style='anime coloring, clean lineart, cinematic lighting',
+        project = dict(schema_version=4, id=project_id, title=title, revision=0, style='anime coloring, clean lineart, cinematic lighting',
                        characters=[], locations=[], props=[], batches=[], pages=[], created_at=now())
         project.update(output_method=output_method, image_settings=dict(anime_finish=False, denoise=.3,
                        reference_mode='references' if output_method == 'qwen' else 'prompt'), references={})
@@ -238,6 +243,8 @@ def mutate(project_id, revision, fn):
         images.require_match(old, new)
         images.for_project(new)
         if new['pages']: validate_board(new, allow_incomplete=new.get('workspace_version')==2)
+        from . import prompt_options
+        prompt_options.require_panel_mode(new)
         new['revision'] += 1
         new['updated_at'] = now()
         dump(directory(project_id) / 'history' / f'project-{old["revision"]:05}.json', old)
@@ -346,7 +353,10 @@ def edit_panel(project_id, revision, panel_id, patch, consumed_input=None):
         raise StudioError('patchから削除すべき項目: ' + ', '.join(sorted(set(patch) - allowed)) + '。対象コマIDはホストが設定済みです')
     def apply(p):
         target=panel_by_id(p,panel_id)
+        old_actors={a['id']:a for a in target.get('characters',[])}
         target.update(copy.deepcopy(patch))
+        if isinstance(patch.get('characters'), list):
+            target['characters']=[{**{k:v for k,v in old_actors.get(a.get('id'),{}).items() if k in ('negative','negative_ja')}, **a} if isinstance(a,dict) else a for a in patch['characters']]
         if 'dialogue' in patch and 'speakers' not in patch and 'speakers' in target and len(target['speakers'])!=len(target['dialogue']): target['speakers']=['']*len(target['dialogue'])
         target['needs_edit']=False
         if consumed_input: (p.get('ui_inputs') or {}).pop(consumed_input, None)

@@ -91,6 +91,14 @@ powershell -ExecutionPolicy Bypass -File Start-Studio.ps1
 powershell -ExecutionPolicy Bypass -File Stop-Studio.ps1
 ```
 
+## Aで作った字コンテ・プロンプトを取り込む
+
+MangaAgentsStudio-Aの個別作品を、SのNovelAI／コマ別作品へ取り込めます。S側の `manga-a-import` スキルが人物・衣装・台詞を整理し、`python -m studio.a_import` が検証と保存を行います。再取り込みではSの編集を保持し、同じ項目がAとSの両方で変わった場合は選択を求めます。A側の変更は不要です。
+
+スキルを使う場合は `skills/manga-a-import` を利用中のCodexのスキルフォルダへ置き、「`$manga-a-import` で、このA作品をSへ取り込んで」と作品の場所を指定します。手動操作は[移行JSONとコマンド](skills/manga-a-import/references/transfer.md)、画面編集と制限は[取り込み後の編集](web/guide/reference.html#a-import)を参照してください。画像・生成履歴・自由な文字配置の移行や、画像生成は含みません。
+
+全入力／引継ぎ設定JSONは `manga-studio-inputs-v4` です。
+
 ## 主な機能と出力
 
 - **作る・続ける：** 84種のコマ割り、11種の絵柄、1ページ1〜7コマ。字コンテは1回1〜4ページ、自動作成は同じ章の中で最大2ページずつ。同一作品は24ページまでで、それ以上は[設定を引き継いで新しい作品へ](web/guide/index.html#over24)進めます。

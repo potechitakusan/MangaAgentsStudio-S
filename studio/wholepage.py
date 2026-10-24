@@ -67,7 +67,11 @@ def save(project_id, revision, number, value):
 
 def set_mode(project_id, revision, mode):
     if mode not in ('panels','whole'): raise db.StudioError('生成モードが不正です')
-    return db.mutate(project_id, revision, lambda p:p.update(render_mode=mode))
+    def apply(p):
+        from . import prompt_options
+        p['render_mode']=mode
+        prompt_options.require_panel_mode(p)
+    return db.mutate(project_id, revision, apply)
 
 def yaml_text(value, depth=0):
     """Emit a small JSON-compatible YAML subset. No YAML parsing or dependencies."""

@@ -5,7 +5,7 @@ import json
 import time
 import uuid
 from collections import Counter
-from . import project as db, profiles, llm, pageplan, local_ai
+from . import project as db, profiles, llm, pageplan, local_ai, prompt_options
 
 def tool(name, description, properties=None, required=None):
     return {'type': 'function', 'function': {'name': name, 'description': description,
@@ -50,6 +50,7 @@ def tidy_board(board):
 
 # Shared by the storyboard builder and the page rewrite, so both keep faces and expressions consistent.
 EXPRESSION_RULE = '各コマ人物のexpressionは、標準の表情（neutral/smile/surprised/crying/angry/embarrassed）がそのコマの感情にはっきり合い、かつ顔が画面に十分見える構図のときだけ指定する。息を切らす・疲れ・緊張・ためらいなど標準にない表情、手元や小物の寄り・後ろ姿・遠景など顔が見えない・小さい構図、動作promptに表情を書いたコマはcustomにする。neutralは本当に無表情のときだけ使い、迷ったらcustomにする。customの表情は動作promptへ英語で書く。'
+PROMPT_MODE_RULE = 'prompt_mode=literalのコマは場面promptと人物promptが完成した送信本文で、台帳や品質語を合成しない。この場合は既存の外見・衣装・画風を本文から削らない。catalogでは台帳を合成する。既存のprompt_mode・conditioning・人物negative/negative_jaは依頼と関係なければ保持する。'
 
 def object_schema(properties, required=()):
     return {'type':'object', 'properties':properties, 'required':list(required), 'additionalProperties':False}
@@ -61,10 +62,10 @@ def board_schema(page_count=None, panel_ja=True):
     array = lambda item: {'type':'array','items':item}
     ja = (lambda **fields: fields) if panel_ja else (lambda **fields: {})
     need = ('prompt_ja',) if panel_ja else ()
-    character = object_schema(dict(id=string, prompt=string, **ja(prompt_ja=string), outfit_id=string, expression={'type':'string','enum':list(profiles.EXPRESSION_MAP)}, x={'type':'number'}, y={'type':'number'}), ('id','prompt',*need,'outfit_id','expression','x','y'))
+    character = object_schema(dict(id=string, prompt=string, **ja(prompt_ja=string), negative=string, **ja(negative_ja=string), outfit_id=string, expression={'type':'string','enum':list(profiles.EXPRESSION_MAP)}, x={'type':'number'}, y={'type':'number'}), ('id','prompt',*need,'outfit_id','expression','x','y'))
     panel = object_schema(dict(id=string, scene=string, prompt=string, **ja(prompt_ja=string), negative=string, **ja(negative_ja=string), location_id=string,
                                prop_ids=array(string), characters=array(character), dialogue=array(string), speakers=array(string),
-                               seed={'type':['integer','null']}, crop=CROP_SCHEMA),
+                               seed={'type':['integer','null']}, crop=CROP_SCHEMA, prompt_mode={'type':'string','enum':['catalog','literal']}, conditioning=prompt_options.schema()),
                           ('scene','prompt',*need,'location_id','characters','dialogue','speakers'))
     preferred=['three','three-wide','four','two','splash','P3-21-straight','P3-12-lean-right','P4-211','P4-22-stagger','P5-122-equal-normal-straight','P6-222-equal-normal-straight']
     choices=[k for k in preferred if k in db.TEMPLATES]
@@ -104,7 +105,9 @@ def bilingual_board(board, project=None, allow_untranslated_panels=False):
         for j,panel in enumerate(objects(page.get('panels',[]),f'pages/{i}/panels')):
             base=f'pages/{i}/panels/{j}';require(panel,('prompt_ja',),base,True)
             if panel.get('negative'):require(panel,('negative_ja',),base,True)
-            for k,actor in enumerate(objects(panel.get('characters',[]),base+'/characters')):require(actor,('prompt_ja',),base+f'/characters/{k}',True)
+            for k,actor in enumerate(objects(panel.get('characters',[]),base+'/characters')):
+                require(actor,('prompt_ja',),base+f'/characters/{k}',True)
+                if actor.get('negative'): require(actor,('negative_ja',),base+f'/characters/{k}',True)
     if missing:raise db.StudioError('日本語訳・口調の未入力を補い、全体を再送してください: '+', '.join(missing[:12]))
     return len(untranslated)
 
@@ -191,7 +194,8 @@ def run(project_id, instruction, page_count=1, panel_id=None, progress=None, tra
             'dialogue': {'type': 'array', 'items': {'type': 'string'}},
             'speakers': {'type':'array','items':{'type':'string'}},
             'characters': {'type': 'array', 'items': character_schema},
-            'seed': {'type': ['integer', 'null']}, 'crop': CROP_SCHEMA},
+            'seed': {'type': ['integer', 'null']}, 'crop': CROP_SCHEMA,
+            'prompt_mode': {'type':'string','enum':['catalog','literal']}, 'conditioning': prompt_options.schema()},
             'additionalProperties': False, 'description': '変更する項目だけ。idとpanel_idは禁止。'}
         tools.append(tool('update_panel', '指定されたコマを保存して完了する',
                           {'patch': patch_schema}, ['patch']))
@@ -200,6 +204,7 @@ def run(project_id, instruction, page_count=1, panel_id=None, progress=None, tra
         definition['function']['parameters'] = board_schema(page_count, panel_ja=False)
         tools.append(definition)
         system += '\n保存はsave_storyboardの引数へ直接pages, handoff, 新規台帳を渡す。storyboardで包まない。各ページはtemplate/panelsの2項目。handoffはページ内ではなく最後のトップレベル1個。'
+    system += '\n' + PROMPT_MODE_RULE
     messages = [{'role': 'system', 'content': system}, {'role': 'user', 'content': user_request(instruction, page_count, selected_source['title'], panel_id)}]
     repeats = Counter()
     failures = 0

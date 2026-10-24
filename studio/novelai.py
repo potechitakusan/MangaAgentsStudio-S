@@ -110,32 +110,38 @@ def build_request(project, panel):
     props = {x['id']: x for x in project.get('props', [])}
     fixed_place = places[panel['location_id']]['description'] if panel.get('location_id') else ''
     fixed_props = ', '.join(props[pid]['description'] for pid in panel.get('prop_ids', []))
-    caption = ', '.join(x for x in [profiles.scene_prompt(panel), fixed_place, fixed_props, project['style'], 'very aesthetic, masterpiece, no text'] if x)
-    negative = ', '.join([NEGATIVE, project.get('style_negative',''), panel.get('negative', '')]).strip(', ')
+    literal = panel.get('prompt_mode', 'catalog') == 'literal'
+    caption = panel['prompt'] if literal else ', '.join(x for x in [profiles.scene_prompt(panel), fixed_place, fixed_props, project['style'], 'very aesthetic, masterpiece, no text'] if x)
+    negative = panel.get('negative', '') if literal else ', '.join([NEGATIVE, project.get('style_negative',''), panel.get('negative', '')]).strip(', ')
     cast = {c['id']: c for c in project['characters']}
     characters = []
     exclusions = []
     for c in panel.get('characters', []):
         centers = [{'x': c.get('x', .5), 'y': c.get('y', .5)}]
-        characters.append({'char_caption': profiles.caption(cast[c['id']], c), 'centers': centers})
-        exclusions.append({'char_caption': '', 'centers': centers})
-    return request_payload(caption, negative, characters, panel.get('seed'), width, height)
+        characters.append({'char_caption': c['prompt'] if literal else profiles.caption(cast[c['id']], c), 'centers': centers})
+        exclusions.append({'char_caption': c.get('negative', ''), 'centers': centers})
+    from . import prompt_options
+    return request_payload(caption, negative, characters, panel.get('seed'), width, height,
+                           exclusions=exclusions, conditioning=prompt_options.conditioning(panel))
 
 
-def request_payload(caption, negative, characters, seed, width, height):
-    exclusions = [dict(char_caption='', centers=c['centers']) for c in characters]
+def request_payload(caption, negative, characters, seed, width, height, *, exclusions=None, conditioning=None):
+    exclusions = exclusions if exclusions is not None else [dict(char_caption='', centers=c['centers']) for c in characters]
+    flags = conditioning or dict(use_coords=bool(characters), use_order=True, negative_use_coords=bool(characters), negative_use_order=False)
     params = dict(width=width, height=height, steps=23, n_samples=1, seed=seed if seed is not None else secrets.randbelow(4294967296),
                   sampler='k_euler_ancestral', noise_schedule='karras', scale=7.0, cfg_rescale=0.0,
                   negative_prompt=negative, sm=False, sm_dyn=False, dynamic_thresholding=False,
                   deliberate_euler_ancestral_bug=False, prefer_brownian=True, legacy_v3_extend=False,
                   image_format='png', straight_alpha=True)
-    params['v4_prompt'] = dict(caption=dict(base_caption=caption, char_captions=characters), use_coords=bool(characters), use_order=True, legacy_uc=False)
-    params['v4_negative_prompt'] = dict(caption=dict(base_caption=negative, char_captions=exclusions), use_coords=bool(characters), use_order=False, legacy_uc=False)
+    params['v4_prompt'] = dict(caption=dict(base_caption=caption, char_captions=characters), use_coords=flags['use_coords'], use_order=flags['use_order'], legacy_uc=False)
+    params['v4_negative_prompt'] = dict(caption=dict(base_caption=negative, char_captions=exclusions), use_coords=flags['negative_use_coords'], use_order=flags['negative_use_order'], legacy_uc=False)
     return dict(action='generate', input=caption, model=MODEL, parameters=params)
 
 
 def build_page_request(project, page_number):
     from . import wholepage
+    from . import prompt_options
+    prompt_options.require_panel_mode({**project, 'render_mode': 'whole'})
     compiled = wholepage.compile_prompt(project, page_number)
     negative = 'lowres, bad anatomy, bad hands, jpeg artifacts, watermark, logo, repeated text, furigana'
     if project.get('style_negative'): negative += ', '+project['style_negative']

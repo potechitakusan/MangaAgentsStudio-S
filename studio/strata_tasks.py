@@ -209,6 +209,7 @@ def rewrite_page(project_id, revision, number, instruction, transport=None):
         db.validate_board(test)
         return result
     system=config['system']['storyboard']+'\n'+config['system']['constraints']+'\n'+agent.EXPRESSION_RULE+'\n現在の共通台帳を正として、この1ページの各コマと台詞を改稿する。口調voice_jaに合わせる。古い外見・場所の具体的特徴を場面promptへ残さない。固定外見や画風はpromptへ複写しない。台帳IDは維持。英語promptと日本語prompt_ja、人物のprompt/prompt_ja、台詞順のspeakersを必ず埋める。原作と直前のページ内容の出来事を保つ。'
+    system += '\n' + agent.PROMPT_MODE_RULE
     result=structured(project_id,'rewrite_page',system,context,schema,check,transport)
     result['pages'][number-1]['panels']=voice_panels(project_id,result['characters'],result['pages'][number-1]['panels'],transport)
     return workspace.save(project_id,revision,result)

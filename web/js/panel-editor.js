@@ -13,10 +13,16 @@ function renderPanelEditor() {
   $('prop-ids').replaceChildren(...(project.props || []).map(l => { const box = el('label', undefined, 'check-item'); const input = el('input'); Object.assign(input, {type:'checkbox', value:l.id, checked:(p.prop_ids || []).includes(l.id)}); box.append(input, el('span', l.name)); return box; }));
   if (!(project.props || []).length) $('prop-ids').append(el('span', '小物が登録されていません（作品専用タブの台帳で追加）', 'hint'));
   $('characters').replaceChildren();
+  $('novelai-prompt-options').hidden=project.output_method!=='novelai';
+  const options=$('prompt-options-fields');options.replaceChildren();
+  const mode=selectField(options,'送信プロンプト',[['catalog','台帳の外見・衣装・背景・画風を合成'],['literal','原文をそのまま使用']],p.prompt_mode||'catalog');mode.id='prompt-mode';
+  const flags={use_coords:!!p.characters.length,use_order:true,negative_use_coords:!!p.characters.length,negative_use_order:false,...p.conditioning};
+  for(const [key,label] of Object.entries({use_coords:'人物の配置ピンを使う',use_order:'人物の入力順を使う',negative_use_coords:'人物別除外の配置ピンを使う',negative_use_order:'人物別除外の入力順を使う'})){const l=el('label',undefined,'check-item'),c=el('input');c.type='checkbox';c.id='condition-'+key;c.checked=flags[key];l.append(c,el('span',label));options.append(l);}
   for (const c of p.characters || []) {
     const card = el('div', undefined, 'character-card'); card.dataset.id = c.id; const cast = project.characters.find(x => x.id === c.id);
     card.append(el('strong', cast?.name || c.id), el('p', cast?.appearance || ''));
     const caption = el('textarea'); caption.value = c.prompt; caption.rows = 2; caption.dataset.field = 'prompt'; caption.setAttribute('aria-label', `${cast?.name}の動作・表情`); const captionLabel = el('label', '動作・表情（英語・画像モデルへ送信）'); captionLabel.append(caption); card.append(captionLabel);
+    if(project.output_method==='novelai'){const neg=textField(card,'この人物だけの除外（英語）',c.negative||'',null,2);neg.dataset.field='negative';const ja=textField(card,'この人物だけの除外（日本語・確認用）',c.negative_ja||'',null,2);ja.dataset.field='negative_ja';const actions=el('div',undefined,'translation-actions');actionButton(actions,'日本語 → 英語',()=>translateField(ja,neg,'en'));actionButton(actions,'英語 → 日本語',()=>translateField(neg,ja,'ja'));card.append(actions);}
     const row = el('div', undefined, 'field-row'); for (const key of ['x','y']) { const label = el('label', key === 'x' ? '位置 横 0〜1' : '位置 縦 0〜1'); const input = el('input'); Object.assign(input, {type:'number',min:0,max:1,step:'any',value:c[key] ?? .5}); input.dataset.field = key; label.append(input); row.append(label); } card.append(row); $('characters').append(card);
   }
   $('candidate-list').replaceChildren();
@@ -32,6 +38,7 @@ function renderPanelEditor() {
   panelChanged=false;
   // Per-character outfit and expression.
   [...$('characters').children].forEach((card,i)=>{const a=p.characters[i],c=project.characters.find(c=>c.id===a.id);for(const [field,label,options,value] of [['outfit_id','このコマの衣装',[['','既定の衣装'],...(c.outfits||[]).map(o=>[o.id,o.name])],a.outfit_id||''],['expression','このコマの表情',meta.expressions.map(e=>[e.id,e.name]),a.expression||'custom']]){const s=selectField(card,label,options,value);s.dataset.field=field;s.onchange=e=>{panelChanged=true;markDirty(e);};}});
+  const modeFields=()=>{const literal=project.output_method==='novelai'&&mode.value==='literal';for(const card of $('characters').children){for(const key of ['outfit_id','expression'])card.querySelector(`[data-field="${key}"]`).disabled=literal;for(const key of ['prompt','prompt_ja']){const area=card.querySelector(`[data-field="${key}"]`);area.closest('label').firstChild.textContent=(literal?'人物の送信全文':'動作・表情')+(key==='prompt'?'（英語・画像モデルへ送信）':'（日本語・確認用）');}}};mode.onchange=modeFields;modeFields();
   wholeChanged=false;
   setDirty(false);
 }
@@ -46,6 +53,7 @@ function patch() {
     characters:[...$('characters').children].map(c => ({id:c.dataset.id, prompt:c.querySelector('[data-field="prompt"]').value, x:Number(c.querySelector('[data-field="x"]').value), y:Number(c.querySelector('[data-field="y"]').value)}))};
   result.prompt_ja=$('prompt-ja')?.value||'';result.negative_ja=$('negative-ja')?.value||'';result.speakers=[...$('speaker-fields').querySelectorAll('select')].map(x=>x.value);result.characters.forEach((c,i)=>c.prompt_ja=$('characters').children[i].querySelector('[data-field="prompt_ja"]')?.value||'');result.needs_edit=false;
   result.characters.forEach((c,i)=>{const card=$('characters').children[i];for(const k of ['outfit_id','expression'])c[k]=card.querySelector(`[data-field="${k}"]`).value;});
+  if(project.output_method==='novelai'){result.prompt_mode=$('prompt-mode').value;result.conditioning={};for(const key of ['use_coords','use_order','negative_use_coords','negative_use_order'])result.conditioning[key]=$('condition-'+key).checked;result.characters.forEach((c,i)=>{for(const key of ['negative','negative_ja'])c[key]=$('characters').children[i].querySelector(`[data-field="${key}"]`).value;});}
   return result;
 }
 $('panel-form').addEventListener('input', markDirty);

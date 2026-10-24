@@ -1,0 +1,4 @@
+interface:
+  display_name: "Aの漫画をSへ取り込む"
+  short_description: "Aの字コンテとNovelAIプロンプトをSへ移し、編集を保って再取り込みする"
+  default_prompt: "$manga-a-import を使い、Aで作った漫画の字コンテとプロンプトをSで編集できる形へ取り込んでください。"

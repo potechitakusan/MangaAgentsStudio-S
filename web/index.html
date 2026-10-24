@@ -77,6 +77,7 @@
 <label>場面メモ <span class="hint">日本語のメモ。送信されません</span><textarea id="scene" rows="2"></textarea></label>
 <div id="setting-fields"><label>背景の固定設定<select id="location-id"></select></label><fieldset class="check-field"><legend>このコマに映る固定小物 <span class="hint">チェックを外すと解除</span></legend><div id="prop-ids" class="check-list"></div></fieldset></div>
 <div id="panel-prompt-ja"></div><label>画像プロンプト（英語・画像モデルへ送信） <span class="hint">背景・構図・光</span><textarea id="prompt" rows="4" lang="en" spellcheck="false"></textarea></label><div class="tag-actions"><button type="button" id="tag-picker">辞書からタグを選ぶ</button><span class="hint">構図・表情・しぐさなどの英語タグの候補を、日本語で探して足せます</span></div>
+<details id="novelai-prompt-options"><summary>NovelAIのプロンプト合成・配置</summary><div id="prompt-options-fields"></div><p class="hint">原文方式は場面・人物・除外の欄をそのまま送ります。共通台帳や品質語は追加しません。台帳方式へ切り替えるときは外見・衣装・画風の重複を整理してください。</p></details>
 <details open><summary>人物ごとのプロンプト</summary><div id="characters"></div></details>
 <div id="panel-negative-ja"></div><label>除外する内容（英語・画像モデルへ送信）<textarea id="negative" rows="2" lang="en" spellcheck="false"></textarea></label>
 <label>台詞（日本語・画像の文字として組版／描画） <span class="hint">1行1枠・最大3枠</span><textarea id="dialogue" rows="3"></textarea></label><div id="speaker-fields"></div>

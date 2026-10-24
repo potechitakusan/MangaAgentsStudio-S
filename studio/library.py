@@ -60,7 +60,7 @@ def choose_folder():
 def _files(source):
     # Only known work data, never hidden files, credentials, executables or runtime locks.
     roots = {'project.json', 'source.txt', 'AGENTS.md', 'SKILL.md', 'board.example.json', 'review.json'}
-    trees = {'images': {'.png', '.json'}, 'history': {'.json'}, 'agent-runs': {'.json'},
+    trees = {'images': {'.png', '.json'}, 'history': {'.json'}, 'agent-runs': {'.json'}, 'imports': {'.json'},
              'output': {'.png', '.json'}, 'exports': {'.png', '.psd', '.json', '.md', '.zip'}}
     for base, dirs, names in os.walk(source, followlinks=False):
         folder = Path(base)
@@ -89,6 +89,8 @@ def _validate(p, folder):
     db.identifier(p.get('id'))
     images.for_project(p)
     if type(p.get('revision')) is not int or p['revision'] < 0: raise db.StudioError('作品のrevisionが不正です')
+    from . import a_import
+    a_import.state_for(p, folder)
     db.text_field(p.get('title'), '作品名', 120)
     if not isinstance(p.get('pages'), list): raise db.StudioError('作品のpagesが不正です')
     if p['pages']: db.validate_board(p, allow_incomplete=p.get('workspace_version') == 2)

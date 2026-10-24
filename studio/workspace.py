@@ -38,11 +38,16 @@ def save_defaults(value):
     db.dump(db.ROOT/'.runtime/system-settings.json',value)
     return value
 
+def source_text(project):
+    if 'source' in project: return project['source']
+    path=db.directory(project['id'])/'source.txt'
+    return path.read_text(encoding='utf-8-sig') if path.is_file() else ''
+
 def editable(project):
     result={key:copy.deepcopy(project[key]) for key in COMMON_FIELDS if key in project}
     result.setdefault('system',copy.deepcopy(EMPTY_SYSTEM) if project.get('system_layered') else system_defaults())
     result.setdefault('system_layered',False)
-    result.setdefault('source',(db.directory(project['id'])/'source.txt').read_text(encoding='utf-8-sig'))
+    result.setdefault('source',source_text(project))
     result.setdefault('render_mode','panels')
     result.setdefault('text_mode','overlay' if project.get('workspace_version')==2 else 'embedded')
     for key in ('style_ja','style_negative','style_negative_ja','style_preset'): result.setdefault(key,'')
@@ -81,6 +86,9 @@ def clean_catalog(entries, kind):
 
 def clean_panel(panel, old, locations):
     if not isinstance(panel,dict): raise db.StudioError('コマはオブジェクトです')
+    from . import prompt_options
+    if not isinstance(panel.get('characters', []), list): raise db.StudioError('characters must be an array')
+    prompt_options.validate(panel)
     unknown=set(panel)-set(db.PANEL_FIELDS)
     if unknown: raise db.StudioError('コマ設定に未知の項目: '+', '.join(sorted(unknown)))
     result=copy.deepcopy(old) if old else {}
@@ -91,67 +99,72 @@ def clean_panel(panel, old, locations):
     result.setdefault('speakers',['']*len(result['dialogue']))
     result.setdefault('prop_ids',[])
     if locations: result.setdefault('location_id',locations[0]['id'])
+    old_actors={a['id']:a for a in (old or {}).get('characters',[])}
+    result['characters']=[{**{k:v for k,v in old_actors.get(a.get('id'),{}).items() if k in ('negative','negative_ja')}, **a} for a in result['characters']]
     result['characters']=[{**{k:c.get(k,'' if k not in ('x','y') else .5) for k in ('id','prompt','prompt_ja','x','y')},
-                           **{k:c[k] for k in ('outfit_id','expression') if k in c}} for c in result['characters']]
+                           **{k:c[k] for k in ('outfit_id','expression','negative','negative_ja') if k in c}} for c in result['characters']]
     return result
 
-def save(project_id, revision, value):
+def apply_inputs(p, value):
     if not isinstance(value,dict) or set(value)-set(COMMON_FIELDS)-{'pages'}: raise db.StudioError('設定JSONの項目が不正です')
-    def apply(p):
-        from . import images
-        if 'output_method' in value: images.require_match(p, value)
-        p.setdefault('source',(db.directory(project_id)/'source.txt').read_text(encoding='utf-8-sig'))
-        p.setdefault('render_mode','panels')
-        p.setdefault('text_mode','overlay')
-        old_panels={c['id']:c for c in db.panels(p)}
-        old_pages={page.get('id',f'page-{i}'):page for i,page in enumerate(p['pages'],1)}
-        p['workspace_version']=2
-        for key in COMMON_FIELDS:
-            if key in value: p[key]=copy.deepcopy(value[key])
-        if type(p.get('system_layered',False)) is not bool: raise db.StudioError('system_layeredは真偽値です')
-        p['system']=validate_system(p.get('system',EMPTY_SYSTEM if p.get('system_layered') else system_defaults()))
-        db.text_field(p['title'],'title',120)
-        for key in ('style','style_ja','style_negative','style_negative_ja'): db.text_field(p.get(key,''),key,3000,True)
-        db.text_field(p.get('style_preset',''),'style_preset',100,True)
-        db.text_field(p.get('source',''),'原作',200000,True)
-        if p.get('render_mode','panels') not in ('panels','whole'): raise db.StudioError('生成モードが不正です')
-        if p.get('text_mode','overlay') not in ('overlay','embedded'): raise db.StudioError('一括画像の文字指定が不正です')
-        if not isinstance(p.get('ui_inputs',{}),dict) or len(json.dumps(p.get('ui_inputs',{})))>20000: raise db.StudioError('画面入力設定が大きすぎます')
-        for key in ('characters','locations','props'): p[key]=clean_catalog(p.get(key,[]),key)
-        if 'page_plan' in p:
-            from . import pageplan
-            plan=pageplan.clean(p['page_plan'],p)
-            if plan: p['page_plan']=plan
-            else: p.pop('page_plan')
-        if 'pages' in value:
-            if not isinstance(value['pages'],list) or len(value['pages'])>24: raise db.StudioError('ページは24以内です')
-            new_pages=[]
-            used_pages=set()
-            for i,item in enumerate(value['pages'],1):
-                key=db.identifier(item.get('id') or 'page-'+uuid.uuid4().hex[:12])
-                if key in used_pages: raise db.StudioError('ページIDが重複しています')
-                used_pages.add(key)
-                old=old_pages.get(key,{})
-                page={**copy.deepcopy(old),'id':key,'number':i,'template':item['template']}
-                page['panels']=[clean_panel(c,old_panels.get(c.get('id')),p['locations']) for c in item['panels']]
-                if 'whole' in item:
-                    settings=item['whole']
-                    if 'draft' in settings: images.require_match(p,settings['draft'])
-                    if set(settings)-{'format','seed','draft','linked'}: raise db.StudioError('一括設定の項目が不正です')
-                    page.setdefault('whole',{}).update(copy.deepcopy(settings))
-                new_pages.append(page)
-            p['pages']=new_pages
-        if p['pages']: db.validate_board(p,allow_incomplete=True)
-        else:
-            check={**p,'pages':[dict(template='splash',panels=[dict(id='validation',scene='',prompt='',characters=[],dialogue=[],location_id=p['locations'][0]['id'] if p['locations'] else '')])]}
-            db.validate_board(check,allow_incomplete=True)
-        for i,page in enumerate(p['pages'],1):
-            if page.get('whole',{}).get('linked',True):
-                page.setdefault('whole',{}).update(linked=True,draft=wholepage.from_panels(p,i))
-            # Incomplete draft text can be saved and reviewed before generation.
-            wholepage.validate(p,i,wholepage.settings(p,i))
-    result=db.mutate(project_id,revision,apply)
-    # The project snapshot is canonical; source.txt is a convenient mirror.
+    from . import images
+    if 'output_method' in value: images.require_match(p, value)
+    p.setdefault('source', source_text(p))
+    p.setdefault('render_mode','panels')
+    p.setdefault('text_mode','overlay')
+    old_panels={c['id']:c for c in db.panels(p)}
+    old_pages={page.get('id',f'page-{i}'):page for i,page in enumerate(p['pages'],1)}
+    p['workspace_version']=2
+    p['schema_version']=4
+    for key in COMMON_FIELDS:
+        if key in value: p[key]=copy.deepcopy(value[key])
+    if type(p.get('system_layered',False)) is not bool: raise db.StudioError('system_layeredは真偽値です')
+    p['system']=validate_system(p.get('system',EMPTY_SYSTEM if p.get('system_layered') else system_defaults()))
+    db.text_field(p['title'],'title',120)
+    for key in ('style','style_ja','style_negative','style_negative_ja'): db.text_field(p.get(key,''),key,3000,True)
+    db.text_field(p.get('style_preset',''),'style_preset',100,True)
+    db.text_field(p.get('source',''),'原作',200000,True)
+    if p.get('render_mode','panels') not in ('panels','whole'): raise db.StudioError('生成モードが不正です')
+    if p.get('text_mode','overlay') not in ('overlay','embedded'): raise db.StudioError('一括画像の文字指定が不正です')
+    if not isinstance(p.get('ui_inputs',{}),dict) or len(json.dumps(p.get('ui_inputs',{})))>20000: raise db.StudioError('画面入力設定が大きすぎます')
+    for key in ('characters','locations','props'): p[key]=clean_catalog(p.get(key,[]),key)
+    if 'page_plan' in p:
+        from . import pageplan
+        plan=pageplan.clean(p['page_plan'],p)
+        if plan: p['page_plan']=plan
+        else: p.pop('page_plan')
+    if 'pages' in value:
+        if not isinstance(value['pages'],list) or len(value['pages'])>24: raise db.StudioError('ページは24以内です')
+        new_pages=[]
+        used_pages=set()
+        for i,item in enumerate(value['pages'],1):
+            key=db.identifier(item.get('id') or 'page-'+uuid.uuid4().hex[:12])
+            if key in used_pages: raise db.StudioError('ページIDが重複しています')
+            used_pages.add(key)
+            old=old_pages.get(key,{})
+            page={**copy.deepcopy(old),'id':key,'number':i,'template':item['template']}
+            page['panels']=[clean_panel(c,old_panels.get(c.get('id')),p['locations']) for c in item['panels']]
+            if 'whole' in item:
+                settings=item['whole']
+                if 'draft' in settings: images.require_match(p,settings['draft'])
+                if set(settings)-{'format','seed','draft','linked'}: raise db.StudioError('一括設定の項目が不正です')
+                page.setdefault('whole',{}).update(copy.deepcopy(settings))
+            new_pages.append(page)
+        p['pages']=new_pages
+    if p['pages']: db.validate_board(p,allow_incomplete=True)
+    else:
+        check={**p,'pages':[dict(template='splash',panels=[dict(id='validation',scene='',prompt='',characters=[],dialogue=[],location_id=p['locations'][0]['id'] if p['locations'] else '')])]}
+        db.validate_board(check,allow_incomplete=True)
+    for i,page in enumerate(p['pages'],1):
+        if page.get('whole',{}).get('linked',True):
+            page.setdefault('whole',{}).update(linked=True,draft=wholepage.from_panels(p,i))
+        # Incomplete draft text can be saved and reviewed before generation.
+        wholepage.validate(p,i,wholepage.settings(p,i))
+    from . import prompt_options
+    prompt_options.require_panel_mode(p)
+
+def save(project_id, revision, value):
+    result=db.mutate(project_id,revision,lambda p: apply_inputs(p,value))
     (db.directory(project_id)/'source.txt').write_text(result.get('source',''),encoding='utf-8')
     return result
 
@@ -177,16 +190,16 @@ def config_export(project_id,scope):
     if scope=='system': return dict(schema='manga-studio-system-v2',output_method=p['output_method'],system=editable(p)['system'])
     if scope=='carry':
         e=editable(p)
-        return dict(schema='manga-studio-inputs-v3',output_method=p['output_method'],inputs={k:e[k] for k in CARRY_FIELDS if k in e})
+        return dict(schema='manga-studio-inputs-v4',output_method=p['output_method'],inputs={k:e[k] for k in CARRY_FIELDS if k in e})
     if scope!='all': raise db.StudioError('設定出力はsystem/carry/allです')
-    return dict(schema='manga-studio-inputs-v3',output_method=p['output_method'],inputs=editable(p))
+    return dict(schema='manga-studio-inputs-v4',output_method=p['output_method'],inputs=editable(p))
 
 def config_import(project_id,revision,data):
     from . import images
     p=db.load(project_id)
     images.require_match(p,data)
     if data.get('schema')=='manga-studio-system-v2': return save(project_id,revision,{'system':validate_system(data['system'])})
-    if data.get('schema')=='manga-studio-inputs-v3':
+    if data.get('schema')=='manga-studio-inputs-v4':
         images.require_match(p,data.get('inputs'))
         return save(project_id,revision,data['inputs'])
     raise db.StudioError('対応する設定JSONではありません')
